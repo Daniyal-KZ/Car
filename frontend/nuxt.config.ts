@@ -1,7 +1,24 @@
+// nuxt.config.ts
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
+  modules: [
+    '@nuxtjs/tailwindcss'
+  ],
+
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap',
+        },
+      ],
+    },
+  },
+
   runtimeConfig: {
     public: {
       apiBase: 'http://127.0.0.1:8000'
