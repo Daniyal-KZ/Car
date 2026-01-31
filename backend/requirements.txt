@@ -3,3 +3,6 @@ uvicorn
 python-dotenv
 psycopg2-binary
 SQLAlchemy
+passlib
+pydantic[passlib]
+bcrypt

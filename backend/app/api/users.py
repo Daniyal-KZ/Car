@@ -8,8 +8,8 @@ from app.core.security import hash_password
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-# создаём таблицы (DEV)
-Base.metadata.create_all(bind=engine)
+# УБРАТЬ эту строку!
+# Base.metadata.create_all(bind=engine)
 
 # GET all
 @router.get("/", response_model=list[UserOut])
@@ -27,8 +27,11 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 # CREATE
 @router.post("/", response_model=UserOut, status_code=201)
 def create_user(data: UserCreate, db: Session = Depends(get_db)):
+    # Проверка уникальности email
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(400, "Email already exists")
+
+    # Проверка уникальности username
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(400, "Username already exists")
 
@@ -44,15 +47,22 @@ def create_user(data: UserCreate, db: Session = Depends(get_db)):
     db.refresh(user)
     return user
 
-
 # UPDATE
 @router.put("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
-    for field, value in data.model_dump(exclude_unset=True).items():
+
+    update_data = data.model_dump(exclude_unset=True)
+
+    # Если обновляется пароль - хешируем его
+    if 'password' in update_data:
+        update_data['password_hash'] = hash_password(update_data.pop('password'))
+
+    for field, value in update_data.items():
         setattr(user, field, value)
+
     db.commit()
     db.refresh(user)
     return user
@@ -65,3 +75,4 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "User not found")
     db.delete(user)
     db.commit()
+    return None

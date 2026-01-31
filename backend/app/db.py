@@ -16,9 +16,13 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+def init_database():
+    from app.models import Base
+    Base.metadata.create_all(bind=engine)
 try:
     with engine.connect() as conn:
         conn.execute("SELECT 1")
-        print("Подключение к Postgres успешно!")
+        init_database()
+
 except Exception as e:
     print("Ошибка подключения:", e)
