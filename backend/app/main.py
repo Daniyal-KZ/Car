@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
-from .db import engine
+from app.api import users  # импортируем CRUD
 
 app = FastAPI(title="CAR API")
 
+# CORS
 origins = ["http://localhost:3000"]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -15,22 +14,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/ping")
-def ping():
-    return {"status": "ok"}
-
-@app.get("/users")
-def get_users():
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT * FROM users"))
-        users = [dict(row._mapping) for row in result]
-    return {"users": users}
-
-@app.post("/users/add")
-def add_user(username: str, role: str):
-    with engine.begin() as conn:
-        conn.execute(
-            text("INSERT INTO users (username, role) VALUES (:username, :role)"),
-            {"username": username, "role": role}
-        )
-    return {"status": "user added", "username": username, "role": role}
+# подключаем все роуты
+app.include_router(users.router)

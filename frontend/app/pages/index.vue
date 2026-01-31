@@ -8,8 +8,8 @@ const { data } = await useFetch(`${config.public.apiBase}/users`)
     <h1 class="text-6xl font-bold text-white">안녕하세요 — Hello in Korean</h1>
     <p class="text-xl text-yellow-400 font-medium">Tailwind + Nuxt + Noto Sans KR</p>
 
-    <div v-if="data?.users && data.users.length > 0" class="text-white text-2xl">
-      Hello, {{ data.users[1].username }} — роль: {{ data.users[1].role }}
+    <div v-if="data && data.length > 0" class="text-white text-2xl">
+      Hello, {{ data[0].username }} — роль: {{ data[0].role }}
     </div>
   </div>
 </template>
