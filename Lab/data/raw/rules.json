@@ -1,0 +1,19 @@
+{
+  "scenario_name": "Регламент ТО автомобиля",
+
+  "mileage_rules": {
+    "oil_change": 10000,
+    "brake_service": 40000,
+    "suspension_check": 70000
+  },
+
+  "symptom_mapping": {
+    "стучит": "Подвеска",
+    "скрип": "Тормозная система",
+    "вибрация": "Колеса / Балансировка"
+  },
+
+  "critical_rules": {
+    "must_be_diagnosed": true
+  }
+}

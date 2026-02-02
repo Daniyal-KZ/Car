@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import users  # импортируем CRUD
+
+from app.api import users
+from app.api import cars
+from app.models import Base, Car
+from app.db import engine
 
 app = FastAPI(title="CAR API")
 
-# CORS
+
 origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
@@ -14,5 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# подключаем все роуты
 app.include_router(users.router)
+app.include_router(cars.router)
+
+Base.metadata.create_all(bind=engine)

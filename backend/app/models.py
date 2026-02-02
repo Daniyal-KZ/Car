@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -13,3 +13,13 @@ class User(Base):
     role = Column(String, default="user", nullable=False)
 
     password_hash = Column(String, nullable=False)  # для хранения хэша пароля
+
+class Car(Base):
+    __tablename__ = "cars"
+
+    id = Column(Integer, primary_key=True, index=True)
+    brand = Column(String, nullable=False, index=True)       # Марка
+    model = Column(String, nullable=False, index=True)       # Модель
+    year = Column(Integer, nullable=False)                   # Год выпуска
+    mileage = Column(Float, default=0)                       # Текущий пробег
+    last_service = Column(Float, default=0)                  # Пробег при последнем ТО

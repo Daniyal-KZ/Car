@@ -22,3 +22,26 @@ class UserOut(UserBase):
 
     class Config:
         from_attributes = True
+
+class CarBase(BaseModel):
+    brand: str
+    model: str
+    year: int
+    mileage: float = 0
+
+class CarCreate(CarBase):
+    pass
+
+class CarUpdate(BaseModel):
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    mileage: Optional[float] = None
+    last_service: Optional[float] = None
+
+class CarOut(CarBase):
+    id: int
+    last_service: float
+
+    class Config:
+        from_attributes = True
