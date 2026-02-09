@@ -55,3 +55,5 @@ def delete_car(car_id: int, db: Session = Depends(get_db)):
     db.delete(car)
     db.commit()
     return None
+
+

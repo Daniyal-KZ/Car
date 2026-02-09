@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
@@ -19,10 +19,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def init_database():
     from app.models import Base
     Base.metadata.create_all(bind=engine)
+
+# проверка подключения
 try:
     with engine.connect() as conn:
-        conn.execute("SELECT 1")
+        conn.execute(text("SELECT 1"))  # <-- текст нужен обязательно
         init_database()
-
 except Exception as e:
     print("Ошибка подключения:", e)

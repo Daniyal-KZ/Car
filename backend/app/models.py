@@ -12,7 +12,7 @@ class User(Base):
     phone = Column(String, nullable=True)
     role = Column(String, default="user", nullable=False)
 
-    password_hash = Column(String, nullable=False)  # для хранения хэша пароля
+    password_hash = Column(String, nullable=False)
 
 class Car(Base):
     __tablename__ = "cars"

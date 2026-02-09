@@ -1,15 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.api import users
-from app.api import cars
-from app.models import Base, Car
+from app.api import users, auth, cars
+from app.models import Base
 from app.db import engine
 
 app = FastAPI(title="CAR API")
 
-
 origins = ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -19,6 +17,8 @@ app.add_middleware(
 )
 
 app.include_router(users.router)
+app.include_router(auth.router)
 app.include_router(cars.router)
 
+# создаём таблицы при старте
 Base.metadata.create_all(bind=engine)
