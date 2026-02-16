@@ -1,5 +1,8 @@
 import networkx as nx
-from models import CarComponent, Symptom, Problem, MaintenanceTask, Entity
+try:
+    from models import CarComponent, Symptom, Problem, MaintenanceTask, Entity
+except ImportError:
+    from src.models import CarComponent, Symptom, Problem, MaintenanceTask, Entity
 
 
 class KnowledgeGraph:

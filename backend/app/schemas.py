@@ -42,6 +42,8 @@ class CarUpdate(BaseModel):
 class CarOut(CarBase):
     id: int
     last_service: float
+    owner_id: int
 
     class Config:
         from_attributes = True
+

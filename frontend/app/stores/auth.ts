@@ -2,54 +2,58 @@ import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: process.client ? localStorage.getItem('token') : null,
-    user: null as any
+    user: null as any,
+    isAuth: false,
+    token: null as string | null
   }),
 
-  getters: {
-    isLoggedIn: (state) => !!state.token
-  },
-
   actions: {
-    async login(username: string, password: string) {
-      const config = useRuntimeConfig()
-
-      const form = new URLSearchParams()
-      form.append('username', username)
-      form.append('password', password)
-
-      const res: any = await $fetch(`${config.public.apiBase}/auth/login`, {
-        method: 'POST',
-        body: form,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      })
-
-      this.token = res.access_token
+    async init() {
       if (process.client) {
-        try {
-          localStorage.setItem('token', res.access_token)
-        } catch {}
+        const token = localStorage.getItem('access_token')
+        const savedUser = localStorage.getItem('user')
+        if (token && savedUser) {
+          this.token = token
+          this.user = JSON.parse(savedUser)
+          this.isAuth = true
+          try {
+            await this.fetchMe()
+          } catch {
+            this.logout()
+          }
+        }
       }
-
-      await this.fetchMe()
     },
 
     async fetchMe() {
-      if (!this.token) return
-
       const config = useRuntimeConfig()
-
       this.user = await $fetch(`${config.public.apiBase}/users/me`, {
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        }
+        headers: { Authorization: `Bearer ${this.token}` }
       })
+      this.isAuth = true
+      localStorage.setItem('user', JSON.stringify(this.user))
+    },
+
+    async login(username: string, password: string) {
+      const config = useRuntimeConfig()
+      const form = new URLSearchParams({ username, password })
+      const data = await $fetch<{ access_token: string }>(`${config.public.apiBase}/auth/login`, {
+        method: 'POST',
+        body: form
+      })
+      this.token = data.access_token
+      localStorage.setItem('access_token', data.access_token)
+      await this.fetchMe()
     },
 
     logout() {
-      this.token = null
       this.user = null
-      localStorage.removeItem('token')
+      this.isAuth = false
+      this.token = null
+      if (process.client) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('user')
+      }
     }
   }
 })
