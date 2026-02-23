@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, DateTime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -32,3 +33,17 @@ class Car(Base):
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     owner = relationship("User", back_populates="cars")
               # Пробег при последнем ТО
+
+
+class ServiceRequest(Base):
+    __tablename__ = "service_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    car_id = Column(Integer, ForeignKey("cars.id"), nullable=False)
+    type = Column(String, nullable=False)  # тип заявки, например "repair", "maintenance"
+    comment = Column(String, nullable=True)
+    status = Column(String, default="submitted", nullable=False)  # submitted, accepted, in_progress, done, cancelled
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    car = relationship("Car", backref="service_requests")

@@ -9,6 +9,8 @@ from app.core.security import verify_password, create_access_token, decode_acces
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+COOKIE_NAME = "access_token"
+
 
 @router.post("/login", status_code=200)
 def login(
@@ -24,20 +26,28 @@ def login(
             detail="Invalid credentials"
         )
 
-    access_token = create_access_token({"user_id": user.id})
+    # ✅ добавили role в токен
+    access_token = create_access_token({"user_id": user.id, "role": user.role})
 
+    # ✅ cookie оставляем как бонус (может пригодиться позже)
     response.set_cookie(
-    key="access_token",
-    value=access_token,
-    httponly=True,
-    samesite="lax",  # для localhost
-    secure=False,    # для localhost
-    max_age=60*60*24*7,
-    path="/"
-)
+        key=COOKIE_NAME,
+        value=access_token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=60 * 60 * 24 * 7,
+        path="/"
+    )
 
-    # Return token in response body as well so SPA can store/use it in Authorization header
+    # ✅ Nuxt берет access_token отсюда
     return {"ok": True, "access_token": access_token}
+
+
+@router.post("/logout", status_code=200)
+def logout(response: Response):
+    response.delete_cookie(key=COOKIE_NAME, path="/")
+    return {"ok": True}
 
 
 def get_current_user(
@@ -47,7 +57,7 @@ def get_current_user(
 ):
     token = None
 
-    # Prefer Authorization header if provided
+    # ✅ приоритет Bearer (как у тебя и было)
     if authorization and authorization.lower().startswith("bearer "):
         token = authorization.split(" ", 1)[1]
     else:
@@ -60,7 +70,7 @@ def get_current_user(
         )
 
     payload = decode_access_token(token)
-    if not payload:
+    if not payload or "user_id" not in payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"

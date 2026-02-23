@@ -25,5 +25,14 @@ export default defineNuxtConfig({
     public: {
       apiBase: 'http://localhost:8000'
     }
+  },
+
+  nitro: {
+    devProxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      }
+    }
   }
 })

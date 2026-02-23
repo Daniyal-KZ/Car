@@ -2,6 +2,10 @@
   <form @submit.prevent="submitLogin" class="w-full max-w-sm space-y-6 p-8 rounded-2xl bg-white shadow-xl">
     <h1 class="text-center mb-6 text-xl">Sign in to your account</h1>
 
+    <div v-if="errorText" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ errorText }}
+    </div>
+
     <div class="space-y-2">
       <label class="block text-sm font-medium text-gray-700">Username</label>
       <input
@@ -24,9 +28,10 @@
 
     <button
       type="submit"
-      class="w-full rounded-xl bg-gradient-to-r from-gray-900 to-black text-white py-3.5 font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 shadow-lg hover:shadow-xl"
+      :disabled="loading"
+      class="w-full rounded-xl bg-gradient-to-r from-gray-900 to-black text-white py-3.5 font-medium hover:opacity-90 active:scale-[0.99] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-60"
     >
-      Sign In
+      {{ loading ? 'Signing in...' : 'Sign In' }}
     </button>
   </form>
 </template>
@@ -37,17 +42,21 @@ import { useAuthStore } from '~/stores/auth'
 
 const username = ref('')
 const password = ref('')
+const errorText = ref<string | null>(null)
+const loading = ref(false)
+
 const auth = useAuthStore()
 
 const submitLogin = async () => {
+  errorText.value = null
+  loading.value = true
   try {
     await auth.login(username.value, password.value)
-    setTimeout(() => {
-      navigateTo('/')
-    }, 1000)
-  } catch (err) {
-    alert('Неверный логин или пароль')
+    await navigateTo('/')
+  } catch (err: any) {
+    errorText.value = err?.message || 'Ошибка входа'
+  } finally {
+    loading.value = false
   }
 }
-
 </script>
