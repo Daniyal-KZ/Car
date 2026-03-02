@@ -43,6 +43,7 @@ class CarOut(CarBase):
     id: int
     last_service: float
     owner_id: int
+    owner: Optional[UserOut] = None
 
     class Config:
         from_attributes = True

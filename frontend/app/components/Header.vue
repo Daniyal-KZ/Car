@@ -23,7 +23,7 @@
 
         <!-- USER -->
         <template v-else-if="role === 'user'">
-          <NuxtLink to="/my-garage" class="nav-link">Мой гараж</NuxtLink>
+          <NuxtLink to="/garage" class="nav-link">Мой гараж</NuxtLink>
           <NuxtLink to="/inspection" class="nav-link">Регламентное ТО</NuxtLink>
           <NuxtLink to="/inspection-request" class="nav-link">Записаться</NuxtLink>
           <NuxtLink to="/diagnostics-request" class="nav-link">Диагностика</NuxtLink>

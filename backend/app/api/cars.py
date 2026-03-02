@@ -16,6 +16,44 @@ def get_my_cars(
 ):
     return db.query(Car).filter(Car.owner_id == current_user.id).all()
 
+from sqlalchemy.orm import joinedload
+from app.api.deps import require_roles
+
+# ===============================
+# ADMIN / MECHANIC ENDPOINTS
+# ===============================
+
+@router.get("/admin/all", response_model=list[CarOut])
+def admin_get_all_cars(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin"))  # 👈 доступ только админу
+):
+    return (
+        db.query(Car)
+        .options(joinedload(Car.owner))  # подтягиваем владельца
+        .order_by(Car.id.desc())
+        .all()
+    )
+
+
+@router.get("/admin/{car_id}", response_model=CarOut)
+def admin_get_car(
+    car_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin"))
+):
+    car = (
+        db.query(Car)
+        .options(joinedload(Car.owner))
+        .filter(Car.id == car_id)
+        .first()
+    )
+
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    return car
+
 
 @router.get("/{car_id}", response_model=CarOut)
 def get_car(
