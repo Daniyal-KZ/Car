@@ -12,7 +12,6 @@ const auth = useAuthStore()
 const role = computed(() => auth.user?.role ?? "user")
 const isAdmin = computed(() => role.value === "admin")
 
-// ✅ один маршрут /garage, но разные данные
 const carsEndpoint = computed(() => {
   return isAdmin.value
     ? `${config.public.apiBase}/cars/admin/all`
@@ -27,19 +26,17 @@ const { data, pending, error, refresh } = await useFetch<Car[]>(
     headers: computed(() => ({
       Authorization: auth.token ? `Bearer ${auth.token}` : "",
     })),
-    watch: [carsEndpoint], // ✅ если роль поменялась/перелогинился, перезагрузит
+    watch: [carsEndpoint],
   }
 )
 
 const cars = computed(() => data.value ?? [])
 
 const onOpen = (id: number) => navigateTo(`/garage/${id}`)
-const onEdit = (id: number) => navigateTo(`/garage/${id}?edit=1`)
 const onCreate = () => navigateTo(`/garage/create`)
 
 const onDelete = async (id: number) => {
   if (!confirm("Удалить машину?")) return
-
 
   await $fetch(`${config.public.apiBase}/cars/${id}`, {
     method: "DELETE",
@@ -56,13 +53,31 @@ const errText = computed(() => (error.value ? "Не удалось загруз�
 
 <template>
   <div class="max-w-6xl mx-auto px-6 py-10">
- <CarTable
-  :title="pageTitle"
-  :cars="cars"
-  :showOwner="isAdmin"
-  :loading="pending"
-  :error="errText"
-  @open="onOpen"
-/>
+    <div class="mb-6 flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-100">
+          {{ pageTitle }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-400">
+          Всего машин: {{ cars.length }}
+        </p>
+      </div>
+
+      <button
+        v-if="!isAdmin"
+        class="rounded-2xl bg-yellow-400 px-5 py-3 font-medium text-black transition hover:opacity-90"
+        @click="onCreate"
+      >
+        + Добавить машину
+      </button>
+    </div>
+
+    <CarTable
+      :cars="cars"
+      :showOwner="isAdmin"
+      :loading="pending"
+      :error="errText"
+      @open="onOpen"
+    />
   </div>
 </template>

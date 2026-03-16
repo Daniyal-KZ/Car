@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import CarForm from "~/components/garage/CarForm.vue"
+import CarDetails from "~/components/garage/CarDetails.vue"
 import type { Car } from "~/components/garage/CarRow.vue"
 
 definePageMeta({ middleware: ["auth"] })
+
+type CarPayload = {
+  brand: string
+  model: string
+  year: number
+  mileage: number
+  last_service?: number | null
+}
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -11,7 +20,6 @@ const auth = useAuthStore()
 const id = computed(() => Number(route.params.id))
 const isEdit = computed(() => route.query.edit === "1")
 
-// ✅ admin vs user endpoint
 const role = computed(() => auth.user?.role ?? "user")
 const isAdmin = computed(() => role.value === "admin")
 
@@ -34,9 +42,33 @@ const { data, pending, error, refresh } = await useFetch<Car>(
 const mode = computed(() => (isEdit.value ? "edit" : "view"))
 
 const saving = ref(false)
+const selectedFiles = ref<File[]>([])
 
-const submit = async (payload: any) => {
-  // если ты запретил админу редактировать — просто не даём сохранить
+const onFilesChange = (files: File[]) => {
+  selectedFiles.value = files
+}
+
+const uploadCarImages = async (carId: number) => {
+  if (!selectedFiles.value.length) return
+
+  const formData = new FormData()
+
+  for (const file of selectedFiles.value) {
+    formData.append("files", file)
+  }
+
+  await $fetch(`${config.public.apiBase}/cars/${carId}/images`, {
+    method: "POST",
+    body: formData,
+    headers: {
+      Authorization: auth.token ? `Bearer ${auth.token}` : "",
+    },
+  })
+
+  selectedFiles.value = []
+}
+
+const submit = async (payload: CarPayload) => {
   if (isAdmin.value) return
 
   saving.value = true
@@ -48,8 +80,10 @@ const submit = async (payload: any) => {
         Authorization: auth.token ? `Bearer ${auth.token}` : "",
       },
     })
+
+    await uploadCarImages(id.value)
     await refresh()
-    await navigateTo(`/garage/${id.value}`) // убрать ?edit=1
+    await navigateTo(`/garage/${id.value}`)
   } finally {
     saving.value = false
   }
@@ -58,7 +92,6 @@ const submit = async (payload: any) => {
 const cancel = () => navigateTo(`/garage/${id.value}`)
 
 const goEdit = () => {
-  // админ не редактирует
   if (isAdmin.value) return
   navigateTo(`/garage/${id.value}?edit=1`)
 }
@@ -67,27 +100,42 @@ const errText = computed(() => (error.value ? "Не удалось загруз�
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-6 py-10">
+  <div class="mx-auto max-w-6xl px-6 py-10">
     <div class="mb-6">
       <NuxtLink to="/garage" class="text-sm text-gray-400 hover:text-cyan-400">
         ← Назад в гараж
       </NuxtLink>
     </div>
 
-    <div v-if="pending" class="p-6 rounded-2xl bg-gray-950 border border-gray-800 text-gray-300">
+    <div
+      v-if="pending"
+      class="rounded-2xl border border-gray-800 bg-gray-950 p-6 text-gray-300"
+    >
       Загрузка...
     </div>
 
-    <div v-else-if="errText" class="p-6 rounded-2xl bg-red-950/40 border border-red-900 text-red-200">
+    <div
+      v-else-if="errText"
+      class="rounded-2xl border border-red-900 bg-red-950/40 p-6 text-red-200"
+    >
       {{ errText }}
     </div>
 
+    <CarDetails
+      v-else-if="mode === 'view' && data"
+      :car="data"
+      :show-owner="isAdmin"
+      :can-edit="!isAdmin"
+      @edit="goEdit"
+    />
+
     <CarForm
-      v-else
+      v-else-if="data"
       :mode="mode"
       :initial="data as any"
       :loading="saving"
       @submit="submit"
+      @files-change="onFilesChange"
       @cancel="cancel"
       @edit="goEdit"
     />

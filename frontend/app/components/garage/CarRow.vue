@@ -5,6 +5,13 @@ type Owner = {
   email?: string | null
 }
 
+export type CarImage = {
+  id: number
+  car_id: number
+  file_path: string
+  file_name: string
+}
+
 export type Car = {
   id: number
   brand: string
@@ -14,6 +21,7 @@ export type Car = {
   last_service?: number | null
   owner?: Owner | null
   owner_id?: number | null
+  images?: CarImage[]
 }
 
 const props = defineProps<{
@@ -25,6 +33,10 @@ const emit = defineEmits<{
   (e: "open", id: number): void
 }>()
 
+const config = useRuntimeConfig()
+
+const apiBase = computed(() => config.public.apiBase || "http://127.0.0.1:8000")
+
 const ownerLabel = computed(() => {
   if (!props.showOwner) return ""
   const o = props.car.owner
@@ -32,6 +44,12 @@ const ownerLabel = computed(() => {
   if (o?.email) return o.email
   if (props.car.owner_id != null) return `ID: ${props.car.owner_id}`
   return "—"
+})
+
+const previewImage = computed(() => {
+  const first = props.car.images?.[0]
+  if (!first?.file_path) return null
+  return `${apiBase.value}${first.file_path}`
 })
 
 const open = () => emit("open", props.car.id)
@@ -52,6 +70,23 @@ const onKeydown = (e: KeyboardEvent) => {
     @click="open"
     @keydown="onKeydown"
   >
+    <td class="py-3 px-4">
+      <div class="h-14 w-20 overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+        <img
+          v-if="previewImage"
+          :src="previewImage"
+          alt="car"
+          class="h-full w-full object-cover"
+        />
+        <div
+          v-else
+          class="flex h-full w-full items-center justify-center text-[11px] text-gray-500"
+        >
+          Нет фото
+        </div>
+      </div>
+    </td>
+
     <td class="py-3 px-4 whitespace-nowrap text-gray-100 font-medium">
       {{ car.brand }}
     </td>

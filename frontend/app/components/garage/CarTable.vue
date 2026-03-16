@@ -31,43 +31,53 @@ const filtered = computed(() => {
   })
 })
 
-const colSpan = computed(() => (props.showOwner ? 6 : 5))
+const colSpan = computed(() => (props.showOwner ? 7 : 6))
 </script>
 
 <template>
   <section class="w-full">
-    <div class="flex items-center justify-between gap-3 mb-4">
+    <div class="mb-4 flex items-center justify-between gap-3">
       <div>
         <h1 class="text-2xl font-bold text-gray-100">
           {{ title ?? "Гараж" }}
         </h1>
-        <p class="text-gray-400 text-sm mt-1">
+        <p class="mt-1 text-sm text-gray-400">
           Машины: {{ filtered.length }}
         </p>
       </div>
     </div>
 
-    <div class="flex items-center gap-3 mb-4">
+    <div class="mb-4 flex items-center gap-3">
       <input
         v-model="q"
         type="text"
         placeholder="Поиск по марке / модели / году / пробегу..."
-        class="w-full max-w-xl px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600"
+        class="w-full max-w-xl rounded-xl border border-gray-800 bg-gray-900 px-4 py-2 text-gray-100 outline-none focus:border-gray-600"
       />
     </div>
 
-    <div v-if="loading" class="p-6 rounded-2xl bg-gray-950 border border-gray-800 text-gray-300">
+    <div
+      v-if="loading"
+      class="rounded-2xl border border-gray-800 bg-gray-950 p-6 text-gray-300"
+    >
       Загрузка...
     </div>
 
-    <div v-else-if="error" class="p-6 rounded-2xl bg-red-950/40 border border-red-900 text-red-200">
+    <div
+      v-else-if="error"
+      class="rounded-2xl border border-red-900 bg-red-950/40 p-6 text-red-200"
+    >
       {{ error }}
     </div>
 
-    <div v-else class="rounded-2xl overflow-hidden border border-gray-800 bg-gray-950">
+    <div
+      v-else
+      class="overflow-hidden rounded-2xl border border-gray-800 bg-gray-950"
+    >
       <table class="w-full text-left">
         <thead class="bg-gray-900">
-          <tr class="text-gray-300 text-sm">
+          <tr class="text-sm text-gray-300">
+            <th class="py-3 px-4 font-semibold">Фото</th>
             <th class="py-3 px-4 font-semibold">Марка</th>
             <th class="py-3 px-4 font-semibold">Модель</th>
             <th class="py-3 px-4 font-semibold">Год</th>

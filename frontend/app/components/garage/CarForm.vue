@@ -1,4 +1,11 @@
 <script setup lang="ts">
+type CarImage = {
+  id: number
+  car_id: number
+  file_path: string
+  file_name: string
+}
+
 type CarPayload = {
   brand: string
   model: string
@@ -9,7 +16,7 @@ type CarPayload = {
 
 const props = defineProps<{
   mode: "create" | "edit" | "view"
-  initial?: Partial<CarPayload>
+  initial?: Partial<CarPayload> & { images?: CarImage[] }
   loading?: boolean
 }>()
 
@@ -17,11 +24,15 @@ const emit = defineEmits<{
   (e: "submit", payload: CarPayload): void
   (e: "cancel"): void
   (e: "edit"): void
+  (e: "files-change", files: File[]): void
 }>()
 
 const isView = computed(() => props.mode === "view")
 const isEdit = computed(() => props.mode === "edit")
 const isCreate = computed(() => props.mode === "create")
+
+const config = useRuntimeConfig()
+const apiBase = computed(() => config.public.apiBase || "http://127.0.0.1:8000")
 
 const form = reactive<CarPayload>({
   brand: props.initial?.brand ?? "",
@@ -30,6 +41,8 @@ const form = reactive<CarPayload>({
   mileage: props.initial?.mileage ?? 0,
   last_service: props.initial?.last_service ?? 0,
 })
+
+const selectedFiles = ref<File[]>([])
 
 watch(
   () => props.initial,
@@ -43,6 +56,22 @@ watch(
   },
   { deep: true }
 )
+
+const existingImages = computed(() => props.initial?.images ?? [])
+
+const imageUrl = (path: string) => `${apiBase.value}${path}`
+
+const onFilesChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const files = Array.from(input.files ?? [])
+  selectedFiles.value = files
+  emit("files-change", files)
+}
+
+const removeSelectedFile = (index: number) => {
+  selectedFiles.value.splice(index, 1)
+  emit("files-change", [...selectedFiles.value])
+}
 
 const submit = () => {
   emit("submit", {
@@ -65,7 +94,7 @@ const submit = () => {
           <span v-else>Машина</span>
         </h2>
         <p class="text-gray-400 text-sm mt-1">
-          Сейчас без фоток — добавим потом отдельным полем, форма не сломается.
+          Можно смотреть и добавлять фото машины.
         </p>
       </div>
 
@@ -130,6 +159,56 @@ const submit = () => {
           class="w-full px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600 disabled:opacity-60"
           placeholder="0"
         />
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm text-gray-400 mb-2">Текущие фото</label>
+
+        <div v-if="existingImages.length" class="flex flex-wrap gap-3">
+          <img
+            v-for="image in existingImages"
+            :key="image.id"
+            :src="imageUrl(image.file_path)"
+            :alt="image.file_name"
+            class="h-28 w-40 rounded-xl border border-gray-800 object-cover"
+          />
+        </div>
+
+        <div
+          v-else
+          class="flex h-28 w-40 items-center justify-center rounded-xl border border-dashed border-gray-700 bg-gray-900 text-sm text-gray-500"
+        >
+          Нет фото
+        </div>
+      </div>
+
+      <div v-if="!isView" class="md:col-span-2">
+        <label class="block text-sm text-gray-400 mb-2">Добавить новые фото</label>
+
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          class="block w-full rounded-xl border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-gray-200 file:mr-4 file:rounded-lg file:border-0 file:bg-yellow-400 file:px-4 file:py-2 file:text-sm file:font-medium file:text-black"
+          @change="onFilesChange"
+        />
+
+        <div v-if="selectedFiles.length" class="mt-4 flex flex-wrap gap-2">
+          <div
+            v-for="(file, index) in selectedFiles"
+            :key="file.name + index"
+            class="flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200"
+          >
+            <span class="max-w-[180px] truncate">{{ file.name }}</span>
+            <button
+              type="button"
+              class="text-red-400 hover:text-red-300"
+              @click="removeSelectedFile(index)"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
