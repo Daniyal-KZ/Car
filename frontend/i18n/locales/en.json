@@ -1,0 +1,15 @@
+{
+  "garage": "Garage",
+  "maintenance": "Maintenance",
+  "booking": "Booking",
+  "diagnostics": "Diagnostics",
+  "damages": "Damages",
+  "assistant": "AI Assistant",
+  "invoices": "Invoices",
+  "inspection": "Inspection",
+  "defects": "Defects",
+  "maintenance_rules": "Maintenance Rules",
+  "estimate": "Estimate",
+  "dev_panel": "Dev Panel",
+  "login": "Login"
+}
