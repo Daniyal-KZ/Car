@@ -20,12 +20,10 @@ class CarUpdate(BaseModel):
     model: Optional[str] = None
     year: Optional[int] = None
     mileage: Optional[float] = None
-    last_service: Optional[float] = None
 
 
 class CarOut(CarBase):
     id: int
-    last_service: float
     owner_id: int
     owner: Optional[UserOut] = None
     images: list[CarImageOut] = []

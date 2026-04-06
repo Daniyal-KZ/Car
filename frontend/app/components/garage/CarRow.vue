@@ -18,7 +18,6 @@ export type Car = {
   model: string
   year: number
   mileage: number
-  last_service?: number | null
   owner?: Owner | null
   owner_id?: number | null
   images?: CarImage[]
@@ -64,14 +63,14 @@ const onKeydown = (e: KeyboardEvent) => {
 
 <template>
   <tr
-    class="border-b border-gray-800 hover:bg-gray-900/50 transition cursor-pointer"
+    class="border-b border-border hover:bg-slate-100 dark:border-border-dark dark:hover:bg-slate-800 transition cursor-pointer"
     role="button"
     tabindex="0"
     @click="open"
     @keydown="onKeydown"
   >
     <td class="py-3 px-4">
-      <div class="h-14 w-20 overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+      <div class="h-14 w-20 overflow-hidden rounded-lg border border-border bg-white dark:border-border-dark dark:bg-bg-dark">
         <img
           v-if="previewImage"
           :src="previewImage"
@@ -80,34 +79,34 @@ const onKeydown = (e: KeyboardEvent) => {
         />
         <div
           v-else
-          class="flex h-full w-full items-center justify-center text-[11px] text-gray-500"
+          class="flex h-full w-full items-center justify-center text-[11px] text-text-muted dark:text-text-muted"
         >
           Нет фото
         </div>
       </div>
     </td>
 
-    <td class="py-3 px-4 whitespace-nowrap text-gray-100 font-medium">
+    <td class="py-3 px-4 whitespace-nowrap text-text font-medium">
       {{ car.brand }}
     </td>
 
-    <td class="py-3 px-4 text-gray-200">
+    <td class="py-3 px-4 text-text-muted">
       {{ car.model }}
     </td>
 
-    <td class="py-3 px-4 text-gray-300 whitespace-nowrap">
+    <td class="py-3 px-4 text-text-muted whitespace-nowrap">
       {{ car.year }}
     </td>
 
-    <td class="py-3 px-4 text-gray-300 whitespace-nowrap">
+    <td class="py-3 px-4 text-text-muted whitespace-nowrap">
       {{ car.mileage.toLocaleString() }} км
     </td>
 
-    <td class="py-3 px-4 text-gray-400 whitespace-nowrap">
+    <td class="py-3 px-4 text-text-muted dark:text-text-muted whitespace-nowrap">
       {{ car.last_service ?? "—" }}
     </td>
 
-    <td v-if="showOwner" class="py-3 px-4 text-gray-300">
+    <td v-if="showOwner" class="py-3 px-4 text-text-muted">
       {{ ownerLabel }}
     </td>
   </tr>

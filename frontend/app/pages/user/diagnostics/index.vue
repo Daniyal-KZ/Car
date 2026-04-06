@@ -29,8 +29,8 @@ const openItem = (id: number) => navigateTo(`/user/diagnostics/${id}`)
   <div class="mx-auto w-full max-w-6xl px-4 py-6">
     <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-white">Диагностика</h1>
-        <p class="mt-2 text-sm text-slate-400">
+        <h1 class="text-3xl font-bold text-text dark:text-text-dark dark:text-text dark:text-text-dark">Диагностика</h1>
+        <p class="mt-2 text-sm text-text-muted dark:text-text-muted">
           Ваши заявки на диагностику и результаты по каждой машине.
         </p>
       </div>
@@ -47,20 +47,20 @@ const openItem = (id: number) => navigateTo(`/user/diagnostics/${id}`)
       <button
         v-for="item in items"
         :key="item.id"
-        class="w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-5 text-left transition hover:border-cyan-400"
+        class="w-full rounded-2xl border border-border dark:border-border dark:border-border-dark bg-bg dark:bg-bg-dark dark:bg-bg dark:bg-card-dark/ p-5 text-left transition hover:border-cyan-400"
         @click="openItem(item.id)"
       >
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div class="flex flex-wrap items-center gap-3">
-              <h2 class="text-lg font-semibold text-white">{{ item.code }} — {{ item.car }}</h2>
+              <h2 class="text-lg font-semibold text-text dark:text-text-dark dark:text-text dark:text-text-dark">{{ item.code }} — {{ item.car }}</h2>
               <span class="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
                 {{ item.status }}
               </span>
             </div>
 
-            <p class="mt-2 text-sm text-slate-400">Дата: {{ item.date }}</p>
-            <p class="mt-3 text-sm text-slate-300">{{ item.symptom }}</p>
+            <p class="mt-2 text-sm text-text-muted dark:text-text-muted">Дата: {{ item.date }}</p>
+            <p class="mt-3 text-sm text-text dark:text-text-dark dark:text-slate-300">{{ item.symptom }}</p>
           </div>
 
           <div class="text-sm font-medium text-cyan-300">Открыть →</div>

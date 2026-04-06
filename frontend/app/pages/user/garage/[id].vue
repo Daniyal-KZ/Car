@@ -3,15 +3,14 @@ import CarForm from "~/components/garage/CarForm.vue"
 import CarDetails from "~/components/garage/CarDetails.vue"
 import type { Car } from "~/components/garage/CarRow.vue"
 
-definePageMeta({ middleware: ["auth"] })
-
 type CarPayload = {
   brand: string
   model: string
   year: number
   mileage: number
-  last_service?: number | null
 }
+
+definePageMeta({ middleware: ["auth", "role"] })
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -20,14 +19,7 @@ const auth = useAuthStore()
 const id = computed(() => Number(route.params.id))
 const isEdit = computed(() => route.query.edit === "1")
 
-const role = computed(() => auth.user?.role ?? "user")
-const isAdmin = computed(() => role.value === "admin")
-
-const getEndpoint = computed(() => {
-  return isAdmin.value
-    ? `${config.public.apiBase}/cars/admin/${id.value}`
-    : `${config.public.apiBase}/cars/${id.value}`
-})
+const getEndpoint = computed(() => `${config.public.apiBase}/cars/${id.value}`)
 
 const { data, pending, error, refresh } = await useFetch<Car>(
   () => getEndpoint.value,
@@ -52,7 +44,6 @@ const uploadCarImages = async (carId: number) => {
   if (!selectedFiles.value.length) return
 
   const formData = new FormData()
-
   for (const file of selectedFiles.value) {
     formData.append("files", file)
   }
@@ -69,8 +60,6 @@ const uploadCarImages = async (carId: number) => {
 }
 
 const submit = async (payload: CarPayload) => {
-  if (isAdmin.value) return
-
   saving.value = true
   try {
     await $fetch(`${config.public.apiBase}/cars/${id.value}`, {
@@ -83,17 +72,16 @@ const submit = async (payload: CarPayload) => {
 
     await uploadCarImages(id.value)
     await refresh()
-    await navigateTo(`/garage/${id.value}`)
+    await navigateTo(`/user/garage/${id.value}`)
   } finally {
     saving.value = false
   }
 }
 
-const cancel = () => navigateTo(`/garage/${id.value}`)
+const cancel = () => navigateTo(`/user/garage/${id.value}`)
 
 const goEdit = () => {
-  if (isAdmin.value) return
-  navigateTo(`/garage/${id.value}?edit=1`)
+  navigateTo(`/user/garage/${id.value}?edit=1`)
 }
 
 const errText = computed(() => (error.value ? "Не удалось загрузить машину" : null))
@@ -102,14 +90,14 @@ const errText = computed(() => (error.value ? "Не удалось загруз�
 <template>
   <div class="mx-auto max-w-6xl px-6 py-10">
     <div class="mb-6">
-      <NuxtLink to="/garage" class="text-sm text-gray-400 hover:text-cyan-400">
+      <NuxtLink to="/user/garage" class="text-sm text-text-muted hover:text-cyan-400 dark:text-text-muted">
         ← Назад в гараж
       </NuxtLink>
     </div>
 
     <div
       v-if="pending"
-      class="rounded-2xl border border-gray-800 bg-gray-950 p-6 text-gray-300"
+      class="rounded-2xl border border-border bg-bg p-6 text-text dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
     >
       Загрузка...
     </div>
@@ -124,8 +112,9 @@ const errText = computed(() => (error.value ? "Не удалось загруз�
     <CarDetails
       v-else-if="mode === 'view' && data"
       :car="data"
-      :show-owner="isAdmin"
-      :can-edit="!isAdmin"
+      :show-owner="false"
+      :can-edit="true"
+      :service-book-url="`/user/service-book/${data.id}`"
       @edit="goEdit"
     />
 

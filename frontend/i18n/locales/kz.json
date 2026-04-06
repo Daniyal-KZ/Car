@@ -1,0 +1,15 @@
+{
+  "garage": "Мой гараж",
+  "maintenance": "Регламентное ТО",
+  "booking": "Записаться",
+  "diagnostics": "Диагностика",
+  "damages": "Повреждения",
+  "assistant": "ИИ ассистент",
+  "invoices": "Счета",
+  "inspection": "Тех. осмотр",
+  "defects": "Дефекты",
+  "maintenance_rules": "Регламенты ТО",
+  "estimate": "Смета",
+  "dev_panel": "Dev панель",
+  "login": "Войти"
+}

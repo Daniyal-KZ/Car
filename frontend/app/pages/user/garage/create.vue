@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import CarForm from "~/components/garage/CarForm.vue"
 
-definePageMeta({ middleware: ["auth"] })
+definePageMeta({ middleware: ["auth", "role"] })
 
 type CarPayload = {
   brand: string
   model: string
   year: number
   mileage: number
-  last_service?: number | null
 }
 
 const config = useRuntimeConfig()
@@ -25,7 +24,6 @@ const uploadCarImages = async (carId: number) => {
   if (!selectedFiles.value.length) return
 
   const formData = new FormData()
-
   for (const file of selectedFiles.value) {
     formData.append("files", file)
   }
@@ -53,13 +51,13 @@ const submit = async (payload: CarPayload) => {
     })
 
     await uploadCarImages(created.id)
-    await navigateTo(`/garage/${created.id}`)
+    await navigateTo(`/user/garage/${created.id}`)
   } finally {
     loading.value = false
   }
 }
 
-const cancel = () => navigateTo("/garage")
+const cancel = () => navigateTo("/user/garage")
 </script>
 
 <template>

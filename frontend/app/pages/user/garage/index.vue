@@ -48,12 +48,12 @@ const errText = computed(() => (error.value ? "Не удалось загруз�
   <div class="max-w-6xl mx-auto px-6 py-10">
     <div class="mb-6 flex items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-100">{{ pageTitle }}</h1>
-        <p class="mt-1 text-sm text-gray-400">Всего машин: {{ cars.length }}</p>
+        <h1 class="text-2xl font-bold text-text dark:text-text-dark">{{ pageTitle }}</h1>
+        <p class="mt-1 text-sm text-text-muted dark:text-text-muted">Всего машин: {{ cars.length }}</p>
       </div>
 
       <button
-        class="rounded-2xl bg-yellow-400 px-5 py-3 font-medium text-black transition hover:opacity-90"
+        class="rounded-2xl bg-yellow-400 px-5 py-3 font-medium text-black dark:text-text-dark dark:text-text transition hover:opacity-90"
         @click="onCreate"
       >
         + Добавить машину

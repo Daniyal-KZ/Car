@@ -7,8 +7,10 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
+    '@nuxtjs/i18n'
     
   ],
+
 
   app: {
     head: {
@@ -23,7 +25,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8000'
+      apiBase: process.env.API_BASE || 'http://localhost:8000'
     }
   },
 
@@ -34,5 +36,16 @@ export default defineNuxtConfig({
         changeOrigin: true
       }
     }
+  },
+
+  i18n: {
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'ru', name: 'Русский', file: 'ru.json' },
+      { code: 'kz', name: 'Қазақ', file: 'kz.json'}
+    ],
+    defaultLocale: 'ru',
+
   }
+
 })

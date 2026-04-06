@@ -1,22 +1,25 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'assistant' })
 
-definePageMeta({
-  layout:"assistant"
-})
-
-const router = useRouter()
+const auth = useAuthStore()
 const { createChat } = useAssistant()
 
-onMounted(()=>{
+onMounted(() => {
+  if (!auth.user) {
+    navigateTo('/login')
+    return
+  }
 
-const chat = createChat()
+  const chat = createChat()
 
-router.replace(`/assistant/${chat.id}`)
-
+  if (auth.user.role === 'admin' || auth.user.role === 'dev') {
+    navigateTo(`/admin/assistant/${chat.id}`)
+  } else {
+    navigateTo(`/user/assistant/${chat.id}`)
+  }
 })
-
 </script>
 
 <template>
-<div />
+  <div />
 </template>

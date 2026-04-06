@@ -11,7 +11,6 @@ type CarPayload = {
   model: string
   year: number
   mileage: number
-  last_service?: number | null
 }
 
 const props = defineProps<{
@@ -39,7 +38,6 @@ const form = reactive<CarPayload>({
   model: props.initial?.model ?? "",
   year: props.initial?.year ?? new Date().getFullYear(),
   mileage: props.initial?.mileage ?? 0,
-  last_service: props.initial?.last_service ?? 0,
 })
 
 const selectedFiles = ref<File[]>([])
@@ -52,7 +50,6 @@ watch(
     form.model = v.model ?? ""
     form.year = v.year ?? new Date().getFullYear()
     form.mileage = v.mileage ?? 0
-    form.last_service = v.last_service ?? 0
   },
   { deep: true }
 )
@@ -79,28 +76,27 @@ const submit = () => {
     model: form.model.trim(),
     year: Number(form.year),
     mileage: Number(form.mileage),
-    last_service: form.last_service == null ? 0 : Number(form.last_service),
   })
 }
 </script>
 
 <template>
-  <section class="rounded-2xl border border-gray-800 bg-gray-950 p-6">
+  <section class="rounded-2xl border border-border bg-bg dark:border-border-dark dark:bg-bg-dark p-6">
     <div class="flex items-start justify-between gap-4 mb-6">
       <div>
-        <h2 class="text-xl font-bold text-gray-100">
+        <h2 class="text-xl font-bold text-text dark:text-text-dark">
           <span v-if="isCreate">Добавить машину</span>
           <span v-else-if="isEdit">Редактировать</span>
           <span v-else>Машина</span>
         </h2>
-        <p class="text-gray-400 text-sm mt-1">
+        <p class="text-text-muted dark:text-text-muted text-sm mt-1">
           Можно смотреть и добавлять фото машины.
         </p>
       </div>
 
       <button
         v-if="isView"
-        class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm"
+        class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm transition dark:bg-bg-dark dark:text-text-dark dark:hover:bg-slate-700"
         @click="emit('edit')"
       >
         Редактировать
@@ -109,60 +105,50 @@ const submit = () => {
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm text-gray-400 mb-1">Марка</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Марка</label>
         <input
           v-model="form.brand"
           :disabled="isView"
-          class="w-full px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600 disabled:opacity-60"
+          class="w-full px-4 py-2 rounded-xl bg-white text-text border border-border outline-none focus:border-primary dark:bg-bg-dark dark:text-text-dark dark:border-border-dark disabled:opacity-60"
           placeholder="Toyota"
         />
       </div>
 
       <div>
-        <label class="block text-sm text-gray-400 mb-1">Модель</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Модель</label>
         <input
           v-model="form.model"
           :disabled="isView"
-          class="w-full px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600 disabled:opacity-60"
+          class="w-full px-4 py-2 rounded-xl bg-white text-text border border-border outline-none focus:border-primary dark:bg-bg-dark dark:text-text-dark dark:border-border-dark disabled:opacity-60"
           placeholder="Camry"
         />
       </div>
 
       <div>
-        <label class="block text-sm text-gray-400 mb-1">Год</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Год</label>
         <input
           v-model.number="form.year"
           type="number"
           :disabled="isView"
-          class="w-full px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600 disabled:opacity-60"
+          class="w-full px-4 py-2 rounded-xl bg-white text-text border border-border outline-none focus:border-primary dark:bg-bg-dark dark:text-text-dark dark:border-border-dark disabled:opacity-60"
           placeholder="2018"
         />
       </div>
 
       <div>
-        <label class="block text-sm text-gray-400 mb-1">Пробег (км)</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Пробег (км)</label>
         <input
           v-model.number="form.mileage"
           type="number"
           :disabled="isView"
-          class="w-full px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600 disabled:opacity-60"
+          class="w-full px-4 py-2 rounded-xl bg-white text-text border border-border outline-none focus:border-primary dark:bg-bg-dark dark:text-text-dark dark:border-border-dark disabled:opacity-60"
           placeholder="120000"
         />
       </div>
 
-      <div class="md:col-span-2">
-        <label class="block text-sm text-gray-400 mb-1">Пробег при последнем ТО</label>
-        <input
-          v-model.number="form.last_service"
-          type="number"
-          :disabled="isView"
-          class="w-full px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 outline-none focus:border-gray-600 disabled:opacity-60"
-          placeholder="0"
-        />
-      </div>
 
       <div class="md:col-span-2">
-        <label class="block text-sm text-gray-400 mb-2">Текущие фото</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-2">Текущие фото</label>
 
         <div v-if="existingImages.length" class="flex flex-wrap gap-3">
           <img
@@ -170,26 +156,26 @@ const submit = () => {
             :key="image.id"
             :src="imageUrl(image.file_path)"
             :alt="image.file_name"
-            class="h-28 w-40 rounded-xl border border-gray-800 object-cover"
+            class="h-28 w-40 rounded-xl border border-border object-cover dark:border-border-dark"
           />
         </div>
 
         <div
           v-else
-          class="flex h-28 w-40 items-center justify-center rounded-xl border border-dashed border-gray-700 bg-gray-900 text-sm text-gray-500"
+          class="flex h-28 w-40 items-center justify-center rounded-xl border border-dashed border-border bg-white text-sm text-text-muted dark:border-border-dark dark:bg-bg-dark dark:text-text-muted"
         >
           Нет фото
         </div>
       </div>
 
       <div v-if="!isView" class="md:col-span-2">
-        <label class="block text-sm text-gray-400 mb-2">Добавить новые фото</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-2">Добавить новые фото</label>
 
         <input
           type="file"
           accept="image/*"
           multiple
-          class="block w-full rounded-xl border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-gray-200 file:mr-4 file:rounded-lg file:border-0 file:bg-yellow-400 file:px-4 file:py-2 file:text-sm file:font-medium file:text-black"
+          class="block w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-text file:mr-4 file:rounded-lg file:border-0 file:bg-yellow-400 file:px-4 file:py-2 file:text-sm file:font-medium file:text-black dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
           @change="onFilesChange"
         />
 
@@ -197,7 +183,7 @@ const submit = () => {
           <div
             v-for="(file, index) in selectedFiles"
             :key="file.name + index"
-            class="flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200"
+            class="flex items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm text-text dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
           >
             <span class="max-w-[180px] truncate">{{ file.name }}</span>
             <button
@@ -214,7 +200,7 @@ const submit = () => {
 
     <div v-if="!isView" class="flex items-center justify-end gap-3 mt-6">
       <button
-        class="px-4 py-2 rounded-xl border border-gray-700 hover:bg-gray-900 text-gray-100 text-sm"
+        class="px-4 py-2 rounded-xl border border-border hover:bg-slate-100 text-text text-sm dark:border-border-dark dark:hover:bg-slate-800 dark:text-text-dark"
         :disabled="loading"
         @click="emit('cancel')"
       >
@@ -222,7 +208,7 @@ const submit = () => {
       </button>
 
       <button
-        class="px-4 py-2 rounded-xl bg-yellow-400 text-black font-medium hover:opacity-90 transition disabled:opacity-60"
+        class="px-4 py-2 rounded-xl bg-yellow-400 text-black dark:text-text-dark dark:text-text font-medium hover:opacity-90 transition disabled:opacity-60"
         :disabled="loading"
         @click="submit"
       >

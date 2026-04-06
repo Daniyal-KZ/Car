@@ -1,19 +1,20 @@
 <template>
+  <div class="h-screen flex flex-col bg-bg dark:bg-bg-dark text-text dark:text-text-dark overflow-hidden">
 
-<div class="flex h-screen flex-col">
+    <AppHeader />
 
-  <Header />
+    <div class="flex flex-1 min-h-0">
+      <AssistantSidebar />
 
-  <div class="flex flex-1 overflow-hidden bg-white">
-
-    <AssistantSidebar />
-
-    <main class="flex min-w-0 flex-1 flex-col">
-      <slot />
-    </main>
+      <main class="flex-1 min-w-0 overflow-y-auto px-4 py-6">
+        <slot />
+      </main>
+    </div>
 
   </div>
-
-</div>
-
 </template>
+
+<script setup lang="ts">
+import AppHeader from '~/components/layout/AppHeader.vue'
+import AssistantSidebar from '~/components/assistant/AssistantSidebar.vue'
+</script>

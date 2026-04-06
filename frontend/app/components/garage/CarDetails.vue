@@ -5,6 +5,7 @@ const props = defineProps<{
   car: Car
   showOwner?: boolean
   canEdit?: boolean
+  serviceBookUrl?: string
 }>()
 
 const emit = defineEmits<{
@@ -45,8 +46,8 @@ const ownerLabel = computed(() => {
 <template>
   <section class="space-y-6">
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1.45fr_1fr]">
-      <div class="rounded-3xl border border-gray-800 bg-gray-950 p-4">
-        <div class="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
+      <div class="rounded-3xl border border-border bg-bg p-4 dark:border-border-dark dark:bg-bg-dark">
+        <div class="overflow-hidden rounded-2xl border border-border bg-white dark:border-border-dark dark:bg-bg-dark">
           <img
             v-if="activeImage"
             :src="activeImage"
@@ -56,7 +57,7 @@ const ownerLabel = computed(() => {
 
           <div
             v-else
-            class="flex h-[280px] w-full items-center justify-center bg-gray-900 text-lg text-gray-500 sm:h-[360px] lg:h-[460px]"
+            class="flex h-[280px] w-full items-center justify-center bg-slate-100 text-lg text-text-muted sm:h-[360px] lg:h-[460px] dark:bg-bg-dark dark:text-text-muted"
           >
             Нет фото
           </div>
@@ -68,7 +69,7 @@ const ownerLabel = computed(() => {
             :key="image.id"
             type="button"
             class="shrink-0 overflow-hidden rounded-xl border transition"
-            :class="index === activeIndex ? 'border-yellow-400' : 'border-gray-800 hover:border-gray-600'"
+            :class="index === activeIndex ? 'border-yellow-400' : 'border-border hover:border-slate-400 dark:border-border-dark dark:hover:border-slate-600'"
             @click="activeIndex = index"
           >
             <img
@@ -80,92 +81,89 @@ const ownerLabel = computed(() => {
         </div>
       </div>
 
-      <div class="rounded-3xl border border-gray-800 bg-gray-950 p-6">
+      <div class="rounded-3xl border border-border bg-bg p-6 dark:border-border-dark dark:bg-bg-dark">
         <div class="mb-5">
-          <h1 class="text-3xl font-bold text-gray-100">
+          <h1 class="text-3xl font-bold text-text dark:text-text-dark">
             {{ car.brand }} {{ car.model }}
           </h1>
 
-          <p class="mt-2 text-sm text-gray-400">
+          <p class="mt-2 text-sm text-text-muted dark:text-text-muted">
             {{ car.year }} год
           </p>
         </div>
 
         <div class="space-y-4">
-          <div class="rounded-2xl bg-gray-900 px-4 py-4">
-            <div class="text-sm text-gray-400">Пробег</div>
-            <div class="mt-1 text-xl font-semibold text-gray-100">
+          <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+            <div class="text-sm text-text-muted">Пробег</div>
+            <div class="mt-1 text-xl font-semibold text-text">
               {{ car.mileage.toLocaleString() }} км
-            </div>
-          </div>
-
-          <div class="rounded-2xl bg-gray-900 px-4 py-4">
-            <div class="text-sm text-gray-400">Пробег при последнем ТО</div>
-            <div class="mt-1 text-xl font-semibold text-gray-100">
-              {{ car.last_service ?? "—" }}
             </div>
           </div>
 
           <div
             v-if="showOwner"
-            class="rounded-2xl bg-gray-900 px-4 py-4"
+            class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark"
           >
-            <div class="text-sm text-gray-400">Владелец</div>
-            <div class="mt-1 text-base font-medium text-gray-100">
+            <div class="text-sm text-text-muted">Владелец</div>
+            <div class="mt-1 text-base font-medium text-text">
               {{ ownerLabel }}
             </div>
           </div>
         </div>
 
-        <div v-if="canEdit" class="mt-6">
+        <div class="mt-6 space-y-3">
           <button
-            class="w-full rounded-2xl bg-yellow-400 px-4 py-3 font-medium text-black transition hover:opacity-90"
+            v-if="canEdit"
+            class="w-full rounded-2xl bg-yellow-400 px-4 py-3 font-medium text-black transition hover:opacity-90 dark:text-text-dark"
             @click="emit('edit')"
           >
             Редактировать
+          </button>
+
+          <button
+            v-if="serviceBookUrl"
+            class="w-full rounded-2xl bg-blue-600 px-4 py-3 font-medium text-white transition hover:opacity-90"
+            @click="$router.push(serviceBookUrl)"
+          >
+            Сервисная книжка
           </button>
         </div>
       </div>
     </div>
 
-    <div class="rounded-3xl border border-gray-800 bg-gray-950 p-6">
-      <h2 class="mb-4 text-xl font-semibold text-gray-100">
+
+
+    <div class="rounded-3xl border border-border bg-bg p-6 dark:border-border-dark dark:bg-bg-dark">
+      <h2 class="mb-4 text-xl font-semibold text-text dark:text-text-dark">
         Характеристики
       </h2>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div class="rounded-2xl bg-gray-900 px-4 py-4">
-          <div class="text-sm text-gray-400">Марка</div>
-          <div class="mt-1 font-medium text-gray-100">
+        <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+          <div class="text-sm text-text-muted">Марка</div>
+          <div class="mt-1 font-medium text-text">
             {{ car.brand }}
           </div>
         </div>
 
-        <div class="rounded-2xl bg-gray-900 px-4 py-4">
-          <div class="text-sm text-gray-400">Модель</div>
-          <div class="mt-1 font-medium text-gray-100">
+        <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+          <div class="text-sm text-text-muted">Модель</div>
+          <div class="mt-1 font-medium text-text">
             {{ car.model }}
           </div>
         </div>
 
-        <div class="rounded-2xl bg-gray-900 px-4 py-4">
-          <div class="text-sm text-gray-400">Год</div>
-          <div class="mt-1 font-medium text-gray-100">
+        <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+          <div class="text-sm text-text-muted">Год</div>
+          <div class="mt-1 font-medium text-text">
             {{ car.year }}
           </div>
         </div>
 
-        <div class="rounded-2xl bg-gray-900 px-4 py-4">
-          <div class="text-sm text-gray-400">Пробег</div>
-          <div class="mt-1 font-medium text-gray-100">
+        <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+          <div class="text-sm text-text-muted">Пробег</div>
+          <div class="mt-1 font-medium text-text">
             {{ car.mileage.toLocaleString() }} км
-          </div>
-        </div>
-
-        <div class="rounded-2xl bg-gray-900 px-4 py-4 md:col-span-2">
-          <div class="text-sm text-gray-400">Пробег при последнем ТО</div>
-          <div class="mt-1 font-medium text-gray-100">
-            {{ car.last_service ?? "—" }}
           </div>
         </div>
       </div>

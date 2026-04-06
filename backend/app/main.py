@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api import users, auth, cars
+from app.api import users, auth, cars, service_book, maintenance_rules
 from app.db.base import Base
 from app.db.session import engine
 
@@ -28,5 +28,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(cars.router)
+app.include_router(service_book.router)
+app.include_router(maintenance_rules.router)
 
 Base.metadata.create_all(bind=engine)

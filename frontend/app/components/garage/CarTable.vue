@@ -21,7 +21,7 @@ const filtered = computed(() => {
 
   return props.cars.filter((c) => {
     const base =
-      `${c.brand} ${c.model} ${c.year} ${c.mileage} ${c.last_service ?? ""}`.toLowerCase()
+      `${c.brand} ${c.model} ${c.year} ${c.mileage}`.toLowerCase()
 
     const owner = props.showOwner
       ? `${c.owner?.username ?? ""} ${c.owner?.email ?? ""} ${c.owner_id ?? ""}`.toLowerCase()
@@ -31,17 +31,17 @@ const filtered = computed(() => {
   })
 })
 
-const colSpan = computed(() => (props.showOwner ? 7 : 6))
+const colSpan = computed(() => (props.showOwner ? 8 : 7))
 </script>
 
 <template>
   <section class="w-full">
     <div class="mb-4 flex items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-gray-100">
+        <h1 class="text-2xl font-bold text-text dark:text-text-dark">
           {{ title ?? "Гараж" }}
         </h1>
-        <p class="mt-1 text-sm text-gray-400">
+        <p class="mt-1 text-sm text-text-muted dark:text-text-muted">
           Машины: {{ filtered.length }}
         </p>
       </div>
@@ -52,13 +52,13 @@ const colSpan = computed(() => (props.showOwner ? 7 : 6))
         v-model="q"
         type="text"
         placeholder="Поиск по марке / модели / году / пробегу..."
-        class="w-full max-w-xl rounded-xl border border-gray-800 bg-gray-900 px-4 py-2 text-gray-100 outline-none focus:border-gray-600"
+        class="w-full max-w-xl rounded-xl border border-border bg-white px-4 py-2 text-text outline-none focus:border-primary dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
       />
     </div>
 
     <div
       v-if="loading"
-      class="rounded-2xl border border-gray-800 bg-gray-950 p-6 text-gray-300"
+      class="rounded-2xl border border-border bg-bg p-6 text-text dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
     >
       Загрузка...
     </div>
@@ -72,11 +72,11 @@ const colSpan = computed(() => (props.showOwner ? 7 : 6))
 
     <div
       v-else
-      class="overflow-hidden rounded-2xl border border-gray-800 bg-gray-950"
+      class="overflow-hidden rounded-2xl border border-border bg-bg dark:border-border-dark dark:bg-bg-dark"
     >
       <table class="w-full text-left">
-        <thead class="bg-gray-900">
-          <tr class="text-sm text-gray-300">
+        <thead class="bg-slate-100 dark:bg-bg-dark">
+          <tr class="text-sm text-text-muted dark:text-text-muted">
             <th class="py-3 px-4 font-semibold">Фото</th>
             <th class="py-3 px-4 font-semibold">Марка</th>
             <th class="py-3 px-4 font-semibold">Модель</th>
@@ -97,7 +97,7 @@ const colSpan = computed(() => (props.showOwner ? 7 : 6))
           />
 
           <tr v-if="filtered.length === 0">
-            <td class="py-8 px-4 text-gray-400" :colspan="colSpan">
+            <td class="py-8 px-4 text-text-muted dark:text-text-muted" :colspan="colSpan">
               Ничего не найдено.
             </td>
           </tr>

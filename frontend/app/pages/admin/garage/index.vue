@@ -3,24 +3,17 @@ import CarTable from "~/components/garage/CarTable.vue"
 import type { Car } from "~/components/garage/CarRow.vue"
 
 definePageMeta({
-  middleware: ["auth"],
+  middleware: ["auth", "role"],
 })
 
 const config = useRuntimeConfig()
 const auth = useAuthStore()
 
-const role = computed(() => auth.user?.role ?? "user")
-const isAdmin = computed(() => role.value === "admin")
+const carsEndpoint = computed(() => `${config.public.apiBase}/cars/admin/all`)
 
-const carsEndpoint = computed(() => {
-  return isAdmin.value
-    ? `${config.public.apiBase}/cars/admin/all`
-    : `${config.public.apiBase}/cars`
-})
+const pageTitle = 'Гараж'
 
-const pageTitle = computed(() => (isAdmin.value ? "Гараж сервиса" : "Мой гараж"))
-
-const { data, pending, error, refresh } = await useFetch<Car[]>(
+const { data, pending, error, refresh } = useFetch<Car[]>(
   () => carsEndpoint.value,
   {
     headers: computed(() => ({
@@ -32,8 +25,7 @@ const { data, pending, error, refresh } = await useFetch<Car[]>(
 
 const cars = computed(() => data.value ?? [])
 
-const onOpen = (id: number) => navigateTo(`/garage/${id}`)
-const onCreate = () => navigateTo(`/garage/create`)
+const onOpen = (id: number) => navigateTo(`/admin/garage/${id}`)
 
 const onDelete = async (id: number) => {
   if (!confirm("Удалить машину?")) return
@@ -55,26 +47,14 @@ const errText = computed(() => (error.value ? "Не удалось загруз�
   <div class="max-w-6xl mx-auto px-6 py-10">
     <div class="mb-6 flex items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-100">
-          {{ pageTitle }}
-        </h1>
-        <p class="mt-1 text-sm text-gray-400">
-          Всего машин: {{ cars.length }}
-        </p>
+        <h1 class="text-2xl font-bold text-text dark:text-text-dark">{{ pageTitle }}</h1>
+        <p class="mt-1 text-sm text-text-muted dark:text-text-muted">Всего машин: {{ cars.length }}</p>
       </div>
-
-      <button
-        v-if="!isAdmin"
-        class="rounded-2xl bg-yellow-400 px-5 py-3 font-medium text-black transition hover:opacity-90"
-        @click="onCreate"
-      >
-        + Добавить машину
-      </button>
     </div>
 
     <CarTable
       :cars="cars"
-      :showOwner="isAdmin"
+      :showOwner="true"
       :loading="pending"
       :error="errText"
       @open="onOpen"
