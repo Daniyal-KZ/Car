@@ -5,21 +5,39 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
-const { getChatById, createChat } = useAssistant()
+const auth = useAuthStore()
+const { loadChat, createChat, chats, activeChat } = useAssistant()
 
 const chatId = computed(() => String(route.params.id || ""))
-const chat = computed(() => getChatById(chatId.value))
+const chat = computed(() => {
+  // First check chats list
+  const found = chats.value.find((item) => item.id === chatId.value)
+  if (found) return found
+  // Then check activeChat
+  if (activeChat.value?.id === chatId.value) return activeChat.value
+  return undefined
+})
+
+const ensureCurrentChat = async () => {
+  if (!chatId.value) return
+  try {
+    await loadChat(chatId.value)
+  } catch {
+    await router.replace('/assistant')
+  }
+}
 
 onMounted(() => {
-  if (!chat.value) {
-    const newChat = createChat()
-    router.replace(`/admin/assistant/${newChat.id}`)
-  }
+  void ensureCurrentChat()
+})
+
+watch(chatId, () => {
+  void ensureCurrentChat()
 })
 </script>
 
 <template>
-  <div class="flex h-[calc(100vh-140px)] overflow-hidden rounded-3xl border border-border dark:border-border dark:border-border-dark bg-bg dark:bg-bg-dark dark:bg-bg dark:bg-card-dark/">
+  <div class="flex h-[calc(100vh-140px)] overflow-hidden rounded-3xl border border-border bg-bg dark:border-border-dark dark:bg-bg-dark">
     <AssistantSidebar />
 
     <div class="flex min-w-0 flex-1 flex-col">

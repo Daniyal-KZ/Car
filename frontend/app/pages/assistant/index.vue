@@ -2,7 +2,7 @@
 definePageMeta({ layout: 'assistant' })
 
 const auth = useAuthStore()
-const { createChat } = useAssistant()
+const { createChat, fetchChats, sortedChats } = useAssistant()
 
 onMounted(() => {
   if (!auth.user) {
@@ -10,13 +10,17 @@ onMounted(() => {
     return
   }
 
-  const chat = createChat()
+  void (async () => {
+    await fetchChats()
+    const existingChat = sortedChats.value[0]
+    const chat = existingChat ?? await createChat()
 
-  if (auth.user.role === 'admin' || auth.user.role === 'dev') {
-    navigateTo(`/admin/assistant/${chat.id}`)
-  } else {
-    navigateTo(`/user/assistant/${chat.id}`)
-  }
+    if (auth.user?.role === 'admin' || auth.user?.role === 'dev') {
+      navigateTo(`/admin/assistant/${chat.id}`)
+    } else {
+      navigateTo(`/user/assistant/${chat.id}`)
+    }
+  })()
 })
 </script>
 

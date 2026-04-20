@@ -9,6 +9,7 @@ type CarImage = {
 type CarPayload = {
   brand: string
   model: string
+  vin: string | null
   year: number
   mileage: number
 }
@@ -18,6 +19,8 @@ const props = defineProps<{
   initial?: Partial<CarPayload> & { images?: CarImage[] }
   loading?: boolean
 }>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   (e: "submit", payload: CarPayload): void
@@ -36,6 +39,7 @@ const apiBase = computed(() => config.public.apiBase || "http://127.0.0.1:8000")
 const form = reactive<CarPayload>({
   brand: props.initial?.brand ?? "",
   model: props.initial?.model ?? "",
+  vin: props.initial?.vin ?? "",
   year: props.initial?.year ?? new Date().getFullYear(),
   mileage: props.initial?.mileage ?? 0,
 })
@@ -48,6 +52,7 @@ watch(
     if (!v) return
     form.brand = v.brand ?? ""
     form.model = v.model ?? ""
+      form.vin = v.vin ?? ""
     form.year = v.year ?? new Date().getFullYear()
     form.mileage = v.mileage ?? 0
   },
@@ -76,6 +81,7 @@ const submit = () => {
     model: form.model.trim(),
     year: Number(form.year),
     mileage: Number(form.mileage),
+    vin: form.vin?.trim() ? form.vin.trim().toUpperCase() : null,
   })
 }
 </script>
@@ -85,12 +91,12 @@ const submit = () => {
     <div class="flex items-start justify-between gap-4 mb-6">
       <div>
         <h2 class="text-xl font-bold text-text dark:text-text-dark">
-          <span v-if="isCreate">Добавить машину</span>
-          <span v-else-if="isEdit">Редактировать</span>
-          <span v-else>Машина</span>
+          <span v-if="isCreate">{{ t('car_form_add_title') }}</span>
+          <span v-else-if="isEdit">{{ t('garage_edit') }}</span>
+          <span v-else>{{ t('car_form_car_title') }}</span>
         </h2>
         <p class="text-text-muted dark:text-text-muted text-sm mt-1">
-          Можно смотреть и добавлять фото машины.
+          {{ t('car_form_subtitle') }}
         </p>
       </div>
 
@@ -99,13 +105,13 @@ const submit = () => {
         class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm transition dark:bg-bg-dark dark:text-text-dark dark:hover:bg-slate-700"
         @click="emit('edit')"
       >
-        Редактировать
+        {{ t('garage_edit') }}
       </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Марка</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">{{ t('garage_brand') }}</label>
         <input
           v-model="form.brand"
           :disabled="isView"
@@ -115,7 +121,7 @@ const submit = () => {
       </div>
 
       <div>
-        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Модель</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">{{ t('garage_model') }}</label>
         <input
           v-model="form.model"
           :disabled="isView"
@@ -125,7 +131,7 @@ const submit = () => {
       </div>
 
       <div>
-        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Год</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">{{ t('garage_year') }}</label>
         <input
           v-model.number="form.year"
           type="number"
@@ -134,9 +140,19 @@ const submit = () => {
           placeholder="2018"
         />
       </div>
+      <div>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">VIN</label>
+        <input
+          v-model="form.vin"
+          :disabled="isView"
+          maxlength="17"
+          class="w-full px-4 py-2 rounded-xl bg-white text-text border border-border outline-none focus:border-primary dark:bg-bg-dark dark:text-text-dark dark:border-border-dark disabled:opacity-60"
+          placeholder="JTNB11HK0XX123456"
+        />
+      </div>
 
       <div>
-        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">Пробег (км)</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-1">{{ t('car_form_mileage_with_unit') }}</label>
         <input
           v-model.number="form.mileage"
           type="number"
@@ -148,7 +164,7 @@ const submit = () => {
 
 
       <div class="md:col-span-2">
-        <label class="block text-sm text-text-muted dark:text-text-muted mb-2">Текущие фото</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-2">{{ t('car_form_current_photos') }}</label>
 
         <div v-if="existingImages.length" class="flex flex-wrap gap-3">
           <img
@@ -164,12 +180,12 @@ const submit = () => {
           v-else
           class="flex h-28 w-40 items-center justify-center rounded-xl border border-dashed border-border bg-white text-sm text-text-muted dark:border-border-dark dark:bg-bg-dark dark:text-text-muted"
         >
-          Нет фото
+          {{ t('garage_no_photo') }}
         </div>
       </div>
 
       <div v-if="!isView" class="md:col-span-2">
-        <label class="block text-sm text-text-muted dark:text-text-muted mb-2">Добавить новые фото</label>
+        <label class="block text-sm text-text-muted dark:text-text-muted mb-2">{{ t('car_form_add_new_photos') }}</label>
 
         <input
           type="file"
@@ -204,7 +220,7 @@ const submit = () => {
         :disabled="loading"
         @click="emit('cancel')"
       >
-        Отмена
+        {{ t('car_form_cancel') }}
       </button>
 
       <button
@@ -212,8 +228,8 @@ const submit = () => {
         :disabled="loading"
         @click="submit"
       >
-        <span v-if="isCreate">Создать</span>
-        <span v-else>Сохранить</span>
+        <span v-if="isCreate">{{ t('car_form_create') }}</span>
+        <span v-else>{{ t('car_form_save') }}</span>
       </button>
     </div>
   </section>

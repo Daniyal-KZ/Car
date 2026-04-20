@@ -3,11 +3,8 @@ definePageMeta({
   middleware: ["auth"],
 })
 
-const { createChat } = useAssistant()
-
 onMounted(() => {
-  const chat = createChat()
-  navigateTo(`/admin/assistant/${chat.id}`)
+  navigateTo('/assistant')
 })
 </script>
 

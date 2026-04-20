@@ -136,6 +136,13 @@ const openRule = (id: number) => navigateTo(`/admin/maintenance-rules/${id}`)
 >
   {{ rule.status === 'active' ? 'Активен' : 'Черновик' }}
 </span>
+
+              <span
+                class="rounded-full px-3 py-1 text-xs"
+                :class="rule.execution_status === 'performed' ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : rule.execution_status === 'overdue' ? 'border border-rose-500/30 bg-rose-500/10 text-rose-300' : rule.execution_status === 'planned' ? 'border border-cyan-500/30 bg-cyan-500/10 text-cyan-300' : 'border border-slate-500/30 bg-slate-500/10 text-slate-300'"
+              >
+                {{ rule.execution_status === 'performed' ? 'Выполнен' : rule.execution_status === 'overdue' ? 'Просрочен' : rule.execution_status === 'planned' ? 'Запланирован' : 'Не выполнен' }}
+              </span>
             </div>
 
             <p class="mt-3 text-sm text-text-muted dark:text-text-muted">

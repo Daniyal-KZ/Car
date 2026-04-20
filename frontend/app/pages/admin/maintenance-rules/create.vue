@@ -25,6 +25,17 @@ const auth = useAuthStore()
 const loading = ref(false)
 const router = useRouter()
 
+const defaultTemplateTasks: MaintenanceRulePayload['tasks'] = [
+  { mileage_interval: 10000, title: 'Замена моторного масла', description: 'Замена масла и проверка уровня', duration_minutes: 30 },
+  { mileage_interval: 10000, title: 'Замена масляного фильтра', description: 'Установка нового фильтра', duration_minutes: 20 },
+  { mileage_interval: 20000, title: 'Проверка тормозной системы', description: 'Осмотр колодок, дисков и суппортов', duration_minutes: 40 },
+  { mileage_interval: 20000, title: 'Замена салонного фильтра', description: 'Профилактическая замена фильтра салона', duration_minutes: 20 },
+  { mileage_interval: 30000, title: 'Проверка подвески', description: 'Диагностика элементов передней и задней подвески', duration_minutes: 45 },
+  { mileage_interval: 40000, title: 'Замена воздушного фильтра', description: 'Замена воздушного фильтра двигателя', duration_minutes: 20 },
+  { mileage_interval: 60000, title: 'Замена свечей зажигания', description: 'Комплексная замена свечей', duration_minutes: 35 },
+  { mileage_interval: 80000, title: 'Замена тормозной жидкости', description: 'Обновление тормозной жидкости по регламенту', duration_minutes: 45 },
+]
+
 // Reactive form data
 const formData = reactive<MaintenanceRulePayload>({
   title: '',
@@ -48,12 +59,23 @@ const removeTask = (index: number) => {
   formData.tasks.splice(index, 1)
 }
 
+const fillTemplate = () => {
+  formData.tasks = defaultTemplateTasks.map(task => ({ ...task }))
+}
+
 const submit = async (payload: MaintenanceRulePayload) => {
   loading.value = true
   try {
+    const normalizedPayload = {
+      ...payload,
+      tasks: [...payload.tasks]
+        .filter(task => task.title.trim().length > 0)
+        .sort((a, b) => a.mileage_interval - b.mileage_interval),
+    }
+
     await $fetch(`${config.public.apiBase}/maintenance-rules`, {
       method: "POST",
-      body: payload,
+      body: normalizedPayload,
       headers: {
         Authorization: auth.token ? `Bearer ${auth.token}` : "",
       },
@@ -214,13 +236,22 @@ const submit = async (payload: MaintenanceRulePayload) => {
         <div>
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-text dark:text-text-dark">Работы по регламенту</h3>
-            <button
-              type="button"
-              @click="addTask"
-              class="rounded-xl border border-border px-4 py-2 text-sm text-text transition hover:border-cyan-400 hover:text-cyan-300 dark:border-border-dark dark:text-text-dark"
-            >
-              + Добавить работу
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                @click="fillTemplate"
+                class="rounded-xl border border-emerald-500/60 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 transition hover:bg-emerald-500/20"
+              >
+                Заполнить шаблон (8 пунктов)
+              </button>
+              <button
+                type="button"
+                @click="addTask"
+                class="rounded-xl border border-border px-4 py-2 text-sm text-text transition hover:border-cyan-400 hover:text-cyan-300 dark:border-border-dark dark:text-text-dark"
+              >
+                + Добавить работу
+              </button>
+            </div>
           </div>
 
           <div v-if="!formData.tasks.length" class="rounded-2xl border border-border bg-bg p-6 text-center dark:border-border-dark dark:bg-bg-dark">

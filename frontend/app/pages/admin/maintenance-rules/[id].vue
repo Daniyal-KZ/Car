@@ -22,6 +22,45 @@ const { data, pending, refresh } = useFetch(
 )
 
 const rule = computed(() => data.value ?? null)
+const canExecute = computed(() => ['mechanic', 'admin'].includes(auth.user?.role))
+const lastExecution = computed(() => rule.value?.executions?.[0] ?? null)
+
+// ===== EXECUTION =====
+const executionData = reactive({
+  related_object_type: 'car',
+  related_object_id: null as number | null,
+  task_id: null as number | null,
+  comment: ''
+})
+
+const createExecution = async () => {
+  if (!executionData.related_object_id) {
+    alert('Укажите идентификатор объекта (car id).')
+    return
+  }
+
+  try {
+    await $fetch(`${config.public.apiBase}/maintenance-rules/${ruleId.value}/executions`, {
+      method: 'POST',
+      body: {
+        task_id: executionData.task_id ?? undefined,
+        related_object_type: executionData.related_object_type,
+        related_object_id: executionData.related_object_id,
+        comment: executionData.comment,
+      },
+      headers: {
+        Authorization: auth.token ? `Bearer ${auth.token}` : "",
+      },
+    })
+
+    executionData.task_id = null
+    executionData.comment = ''
+    await refresh()
+  } catch (e) {
+    console.error(e)
+    alert('Ошибка сохранения записи выполнения')
+  }
+}
 
 // ===== FORM =====
 const formData = reactive({
@@ -96,7 +135,8 @@ const newTask = reactive({
   mileage_interval: 0,
   title: '',
   description: '',
-  duration_minutes: undefined as number | undefined
+  duration_minutes: undefined as number | undefined,
+  unit_price: 0
 })
 
 const addTask = async () => {
@@ -114,7 +154,8 @@ const addTask = async () => {
     mileage_interval: 0,
     title: '',
     description: '',
-    duration_minutes: undefined
+    duration_minutes: undefined,
+    unit_price: 0
   })
 
   showAddTaskModal.value = false
@@ -213,6 +254,39 @@ const removeTask = async (taskId: number) => {
       <input v-model.number="formData.mileage_to" type="number" placeholder="Пробег до" class="border rounded-xl px-3 py-2" />
     </div>
 
+    <div class="mb-6 rounded-2xl border border-border p-6">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold">Выполнение регламента</h2>
+        <span
+          class="rounded-full px-3 py-1 text-xs"
+          :class="rule?.execution_status === 'performed' ? 'bg-emerald-500/10 text-emerald-300' : rule?.execution_status === 'overdue' ? 'bg-amber-500/10 text-amber-300' : rule?.execution_status === 'planned' ? 'bg-cyan-500/10 text-cyan-300' : 'bg-slate-500/10 text-slate-300'"
+        >
+          {{ rule?.execution_status === 'performed' ? 'Выполнен' : rule?.execution_status === 'overdue' ? 'Просрочен' : rule?.execution_status === 'planned' ? 'Запланирован' : 'Не выполнен' }}
+        </span>
+      </div>
+
+      <div v-if="lastExecution" class="mb-4 rounded-xl border border-border p-4 text-sm">
+        <p><span class="font-medium">Последнее выполнение:</span> {{ new Date(lastExecution.performed_at).toLocaleString() }}</p>
+        <p><span class="font-medium">Кто выполнил:</span> {{ lastExecution.performed_by_name || lastExecution.performed_by_username || lastExecution.performed_by }}</p>
+        <p><span class="font-medium">Комментарий:</span> {{ lastExecution.comment || '—' }}</p>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="mb-3 font-medium">История выполнений</h3>
+        <div v-if="!rule?.executions?.length" class="text-sm text-text-muted">Записей пока нет.</div>
+        <div v-else class="space-y-2">
+          <div v-for="execution in rule.executions" :key="execution.id" class="rounded-xl border border-border p-3 text-sm">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-medium">{{ new Date(execution.performed_at).toLocaleString() }}</span>
+              <span class="text-text-muted">{{ execution.performed_by_name || execution.performed_by_username || execution.performed_by }}</span>
+              <span class="text-text-muted">{{ execution.related_object_type }} #{{ execution.related_object_id }}</span>
+            </div>
+            <p class="mt-1 text-text-muted">{{ execution.comment || 'Без комментария' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- TASKS -->
     <div class="rounded-2xl border p-6">
       <h2 class="mb-4 text-lg font-semibold">Работы</h2>
@@ -221,13 +295,15 @@ const removeTask = async (taskId: number) => {
         <div
           v-for="task in rule?.tasks ?? []"
           :key="task.id"
-          class="border rounded-xl p-3 flex justify-between"
+          class="border rounded-xl p-3 flex justify-between items-start"
         >
           <div>
-            {{ task.mileage_interval }} км — {{ task.title }}
+            <p class="font-medium">{{ task.title }}</p>
+            <p v-if="task.description" class="mt-1 text-sm text-text-muted">{{ task.description }}</p>
+            <p class="mt-2 text-sm text-text-muted">Пробег: {{ task.mileage_interval }} км • Цена: <span class="font-semibold text-cyan-300">{{ task.unit_price?.toLocaleString() || '0' }} ₸</span></p>
           </div>
 
-          <button @click="removeTask(task.id)" class="text-red-400">
+          <button @click="removeTask(task.id)" class="text-red-400 whitespace-nowrap ml-4">
             Удалить
           </button>
         </div>
@@ -244,14 +320,22 @@ const removeTask = async (taskId: number) => {
 
   <!-- MODAL -->
   <div v-if="showAddTaskModal" class="fixed inset-0 flex items-center justify-center bg-black/50">
-    <div class="bg-white p-6 rounded-2xl w-full max-w-md">
-      <input v-model.number="newTask.mileage_interval" type="number" placeholder="Пробег" class="w-full border p-2 mb-2" />
-      <input v-model="newTask.title" placeholder="Название" class="w-full border p-2 mb-2" />
-      <textarea v-model="newTask.description" placeholder="Описание" class="w-full border p-2 mb-2" />
+    <div class="bg-white p-6 rounded-2xl w-full max-w-md dark:bg-slate-900 dark:text-white">
+      <h2 class="mb-4 font-semibold text-lg">Добавить работу</h2>
+      
+      <input v-model.number="newTask.mileage_interval" type="number" placeholder="Пробег (км)" class="w-full border p-2 mb-3 rounded-lg dark:bg-slate-800" />
+      <input v-model="newTask.title" placeholder="Название работы" class="w-full border p-2 mb-3 rounded-lg dark:bg-slate-800" />
+      <textarea v-model="newTask.description" placeholder="Описание" class="w-full border p-2 mb-3 rounded-lg dark:bg-slate-800" />
+      <input v-model.number="newTask.unit_price" type="number" placeholder="Цена (₸)" class="w-full border p-2 mb-4 rounded-lg dark:bg-slate-800" />
 
-      <button @click="addTask" class="w-full bg-cyan-400 py-2 rounded-xl">
-        Добавить
-      </button>
+      <div class="flex gap-2">
+        <button @click="showAddTaskModal = false" class="flex-1 border rounded-xl py-2">
+          Отмена
+        </button>
+        <button @click="addTask" class="flex-1 bg-cyan-400 text-black font-semibold py-2 rounded-xl hover:bg-cyan-300">
+          Добавить
+        </button>
+      </div>
     </div>
   </div>
 </template>

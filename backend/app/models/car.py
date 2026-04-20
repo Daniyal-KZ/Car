@@ -9,6 +9,7 @@ class Car(Base):
     id = Column(Integer, primary_key=True, index=True)
     brand = Column(String, nullable=False, index=True)
     model = Column(String, nullable=False, index=True)
+    vin = Column(String(17), nullable=True, index=True)
     year = Column(Integer, nullable=False)
     mileage = Column(Float, default=0)
 

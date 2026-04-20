@@ -6,6 +6,7 @@ import type { Car } from "~/components/garage/CarRow.vue"
 type CarPayload = {
   brand: string
   model: string
+  vin: string | null
   year: number
   mileage: number
 }

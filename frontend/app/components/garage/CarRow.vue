@@ -16,8 +16,10 @@ export type Car = {
   id: number
   brand: string
   model: string
+  vin?: string | null
   year: number
   mileage: number
+  last_service?: number | null
   owner?: Owner | null
   owner_id?: number | null
   images?: CarImage[]
@@ -27,6 +29,8 @@ const props = defineProps<{
   car: Car
   showOwner?: boolean
 }>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   (e: "open", id: number): void
@@ -81,7 +85,7 @@ const onKeydown = (e: KeyboardEvent) => {
           v-else
           class="flex h-full w-full items-center justify-center text-[11px] text-text-muted dark:text-text-muted"
         >
-          Нет фото
+          {{ t('garage_no_photo') }}
         </div>
       </div>
     </td>
@@ -99,7 +103,11 @@ const onKeydown = (e: KeyboardEvent) => {
     </td>
 
     <td class="py-3 px-4 text-text-muted whitespace-nowrap">
-      {{ car.mileage.toLocaleString() }} км
+      {{ car.vin || "—" }}
+    </td>
+
+    <td class="py-3 px-4 text-text-muted whitespace-nowrap">
+      {{ car.mileage.toLocaleString() }} {{ t('garage_km_short') }}
     </td>
 
     <td class="py-3 px-4 text-text-muted dark:text-text-muted whitespace-nowrap">

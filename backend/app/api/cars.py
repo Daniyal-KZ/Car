@@ -90,6 +90,7 @@ def create_car(
     car = Car(
         brand=data.brand,
         model=data.model,
+        vin=data.vin,
         year=data.year,
         mileage=data.mileage,
         last_service=0,

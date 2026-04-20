@@ -6,6 +6,7 @@ definePageMeta({
 const route = useRoute()
 const config = useRuntimeConfig()
 const auth = useAuthStore()
+const { t, locale } = useI18n()
 
 const carId = computed(() => Number(route.params.id))
 
@@ -16,19 +17,20 @@ const { data, pending, error } = useFetch(
   {
     headers: computed(() => ({
       Authorization: auth.token ? `Bearer ${auth.token}` : "",
+      "X-Lang": locale.value,
     })),
-    watch: [getEndpoint],
+    watch: [getEndpoint, locale],
   }
 )
 
 const entries = computed(() => data.value ?? [])
 
-const errText = computed(() => (error.value ? "Не удалось загрузить сервисную книжку" : null))
+const errText = computed(() => (error.value ? t('service_book_load_error') : null))
 
 const formatDate = (dateStr: string) => {
   try {
     const date = new Date(dateStr)
-    return date.toLocaleString("ru-RU", {
+    return date.toLocaleString(locale.value === 'kz' ? 'kk-KZ' : locale.value === 'en' ? 'en-US' : 'ru-RU', {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -39,6 +41,33 @@ const formatDate = (dateStr: string) => {
     return dateStr
   }
 }
+
+const formatType = (type: string) => {
+  if (type === 'technical_inspection') return t('service_kind_technical_inspection')
+  if (type === 'maintenance_rule_execution') return t('service_kind_maintenance_rule')
+  if (type === 'damage_assessment') return t('service_kind_damage_assessment')
+  if (type === 'service_completed') return t('service_book_service_completed')
+  return type
+}
+
+const formatDescription = (entry: any) => {
+  if (entry.type === 'technical_inspection') {
+    try {
+      const parsed = JSON.parse(entry.description || '{}')
+      const conclusion = parsed.conclusion || t('service_book_inspected')
+      const comment = parsed.comment ? ` | ${parsed.comment}` : ''
+      return `${t('service_book_inspected_label')}: ${conclusion}${comment}`
+    } catch {
+      return t('service_book_inspected')
+    }
+  }
+
+  if (entry.type === 'maintenance_rule_execution') {
+    return t('service_book_maintenance_done')
+  }
+
+  return entry.description
+}
 </script>
 
 <template>
@@ -48,7 +77,7 @@ const formatDate = (dateStr: string) => {
         to="/user/service-book"
         class="text-sm text-text-muted hover:text-cyan-400 dark:text-text-muted"
       >
-        ← Назад к сервисным книжкам
+        {{ t('service_book_back') }}
       </NuxtLink>
     </div>
 
@@ -56,7 +85,7 @@ const formatDate = (dateStr: string) => {
       v-if="pending"
       class="rounded-2xl border border-border bg-bg p-6 text-text dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
     >
-      Загрузка...
+      {{ t('common_loading') }}
     </div>
 
     <div
@@ -68,11 +97,11 @@ const formatDate = (dateStr: string) => {
 
     <div v-else>
       <h1 class="text-2xl font-bold text-text dark:text-text-dark mb-6">
-        Сервисная книжка машины
+        {{ t('service_book_title') }}
       </h1>
 
       <div v-if="!entries.length" class="rounded-2xl border border-border bg-bg p-6 dark:border-border-dark dark:bg-bg-dark">
-        <p class="text-text-muted dark:text-text-muted">Нет записей в сервисной книжке</p>
+        <p class="text-text-muted dark:text-text-muted">{{ t('service_book_empty') }}</p>
       </div>
 
       <div v-else class="space-y-3">
@@ -84,20 +113,20 @@ const formatDate = (dateStr: string) => {
           <div class="flex items-start justify-between gap-4">
             <div class="flex-1">
               <div class="text-sm font-semibold text-yellow-400 uppercase">
-                {{ entry.type }}
+                {{ formatType(entry.type) }}
               </div>
               <div class="mt-2 text-text dark:text-text-dark">
-                {{ entry.description }}
+                {{ formatDescription(entry) }}
               </div>
               <div class="mt-3 flex gap-6 text-sm">
                 <div class="flex items-center gap-2">
-                  <span class="text-text-muted">Пробег:</span>
+                  <span class="text-text-muted">{{ t('garage_mileage') }}:</span>
                   <span class="text-text dark:text-text-dark font-medium">
-                    {{ entry.mileage.toLocaleString() }} км
+                    {{ entry.mileage.toLocaleString() }} {{ t('garage_km_short') }}
                   </span>
                 </div>
                 <div v-if="entry.order_number" class="flex items-center gap-2">
-                  <span class="text-text-muted">Заказ:</span>
+                  <span class="text-text-muted">{{ t('service_book_order') }}:</span>
                   <span class="text-text dark:text-text-dark font-medium">
                     {{ entry.order_number }}
                   </span>

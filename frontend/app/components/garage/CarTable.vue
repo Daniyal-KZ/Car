@@ -21,7 +21,7 @@ const filtered = computed(() => {
 
   return props.cars.filter((c) => {
     const base =
-      `${c.brand} ${c.model} ${c.year} ${c.mileage}`.toLowerCase()
+      `${c.brand} ${c.model} ${c.vin ?? ''} ${c.year} ${c.mileage}`.toLowerCase()
 
     const owner = props.showOwner
       ? `${c.owner?.username ?? ""} ${c.owner?.email ?? ""} ${c.owner_id ?? ""}`.toLowerCase()
@@ -31,7 +31,7 @@ const filtered = computed(() => {
   })
 })
 
-const colSpan = computed(() => (props.showOwner ? 8 : 7))
+const colSpan = computed(() => (props.showOwner ? 9 : 8))
 </script>
 
 <template>
@@ -51,7 +51,7 @@ const colSpan = computed(() => (props.showOwner ? 8 : 7))
       <input
         v-model="q"
         type="text"
-        placeholder="Поиск по марке / модели / году / пробегу..."
+        placeholder="Поиск по марке / модели / VIN / году / пробегу..."
         class="w-full max-w-xl rounded-xl border border-border bg-white px-4 py-2 text-text outline-none focus:border-primary dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
       />
     </div>
@@ -81,6 +81,7 @@ const colSpan = computed(() => (props.showOwner ? 8 : 7))
             <th class="py-3 px-4 font-semibold">Марка</th>
             <th class="py-3 px-4 font-semibold">Модель</th>
             <th class="py-3 px-4 font-semibold">Год</th>
+            <th class="py-3 px-4 font-semibold">VIN</th>
             <th class="py-3 px-4 font-semibold">Пробег</th>
             <th class="py-3 px-4 font-semibold">ТО</th>
             <th v-if="showOwner" class="py-3 px-4 font-semibold">Владелец</th>

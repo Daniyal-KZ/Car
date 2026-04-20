@@ -1,9 +1,43 @@
 <script setup lang="ts">
-import type { Car } from "~/components/garage/CarRow.vue"
-
 definePageMeta({
   middleware: ["auth"],
 })
+
+type CarDto = {
+  id: number
+  brand: string
+  model: string
+  year: number | null
+  mileage: number | null
+}
+
+type MaintenanceTaskDto = {
+  id: number
+  mileage_interval: number
+  title: string
+  description?: string | null
+  duration_minutes?: number | null
+}
+
+type MaintenanceRuleDto = {
+  id: number
+  title: string
+  status: string
+  tasks?: MaintenanceTaskDto[]
+  execution_status?: string | null
+}
+
+type ServiceExecutionDto = {
+  id: number
+  task_id?: number | null
+  performed_at: string
+  related_object_type: string
+  related_object_id: number
+  comment?: string | null
+  performed_by?: number | null
+  performed_by_username?: string | null
+  performed_by_name?: string | null
+}
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -12,29 +46,74 @@ const auth = useAuthStore()
 const carId = computed(() => Number(route.params.id))
 const carEndpoint = computed(() => `${config.public.apiBase}/cars/${carId.value}`)
 const rulesEndpoint = computed(() => `${config.public.apiBase}/maintenance-rules/car/${carId.value}`)
+const executionsEndpoint = computed(() => `${config.public.apiBase}/maintenance-rules/car/${carId.value}/executions`)
 
-const { data: carData, pending: carPending, error: carError } = useFetch<Car>(
+const { data: carData, pending: carPending, error: carError } = useFetch<CarDto>(
   () => carEndpoint.value,
   {
     headers: computed(() => ({
       Authorization: auth.token ? `Bearer ${auth.token}` : "",
     })),
-    watch: [carEndpoint, auth.token],
+    watch: [carEndpoint, () => auth.token],
   }
 )
 
-const { data: rulesData, pending: rulesPending, error: rulesError } = useFetch(
+const { data: rulesData, pending: rulesPending, error: rulesError } = useFetch<MaintenanceRuleDto[]>(
   () => rulesEndpoint.value,
   {
     headers: computed(() => ({
       Authorization: auth.token ? `Bearer ${auth.token}` : "",
     })),
-    watch: [rulesEndpoint, auth.token],
+    watch: [rulesEndpoint, () => auth.token],
   }
 )
 
-const car = computed(() => carData.value)
+const { data: executionsData } = useFetch<ServiceExecutionDto[]>(
+  () => executionsEndpoint.value,
+  {
+    headers: computed(() => ({
+      Authorization: auth.token ? `Bearer ${auth.token}` : "",
+    })),
+    watch: [executionsEndpoint, () => auth.token],
+  }
+)
+
+const car = computed(() => carData.value ?? null)
 const rules = computed(() => rulesData.value ?? [])
+const executions = computed(() => executionsData.value ?? [])
+const latestExecution = computed(() => executions.value[0] ?? null)
+const executedTaskIds = computed(() => {
+  const ids = new Set<number>()
+  executions.value.forEach((execution) => {
+    if (typeof execution.task_id === 'number') ids.add(execution.task_id)
+  })
+  return ids
+})
+
+const now = computed(() => new Date())
+const hasRecentExecution = computed(() => {
+  if (!latestExecution.value) return false
+  const performedAt = new Date(latestExecution.value.performed_at)
+  const diffDays = (now.value.getTime() - performedAt.getTime()) / (1000 * 60 * 60 * 24)
+  return diffDays <= 180
+})
+
+const dueTaskCount = computed(() => {
+  if (car.value?.mileage == null) return 0
+  return allTasks.value.filter(task => task.mileage_interval <= car.value!.mileage!).length
+})
+
+const plannedTaskCount = computed(() => allTasks.value.length - dueTaskCount.value)
+
+const executionStatusText = computed(() => {
+  const statuses = rules.value.map(rule => rule.execution_status)
+  if (statuses.includes('overdue') && statuses.includes('planned')) return 'Просрочен (есть план)'
+  if (statuses.includes('overdue')) return 'Просрочен'
+  if (statuses.includes('not_performed')) return 'Не выполнен'
+  if (statuses.includes('planned')) return 'Запланирован'
+  if (statuses.some(status => status === 'performed')) return 'Выполнен'
+  return 'Нет данных'
+})
 
 // Собираем все работы из всех подходящих регламентов
 const allTasks = computed(() => {
@@ -58,20 +137,52 @@ const groupedTasks = computed(() => {
     if (!groups[task.mileage_interval]) {
       groups[task.mileage_interval] = []
     }
-    groups[task.mileage_interval].push(task)
+    groups[task.mileage_interval]!.push(task)
   })
   return groups
 })
 
+const getMileageGroupStatus = (mileage: number, tasks: any[]) => {
+  if (car.value?.mileage == null) return { label: 'План', className: 'bg-slate-500' }
+
+  if (mileage > car.value.mileage) {
+    return { label: 'План', className: 'bg-cyan-500' }
+  }
+
+  const pendingTasks = tasks.filter(task => !executedTaskIds.value.has(task.id))
+
+  if (!pendingTasks.length) {
+    return { label: 'Выполнено', className: 'bg-emerald-500' }
+  }
+
+  if (mileage < car.value.mileage) {
+    return { label: 'Просрочено', className: 'bg-rose-500' }
+  }
+
+  return { label: 'Нужно выполнить', className: 'bg-amber-500' }
+}
+
 const nextServiceMileage = computed(() => {
-  if (!car.value?.mileage) return null
+  if (car.value?.mileage == null) return null
   // Находим следующий интервал обслуживания
   const intervals = Object.keys(groupedTasks.value).map(Number).sort((a, b) => a - b)
-  const nextInterval = intervals.find(interval => interval > car.value.mileage)
+  const nextInterval = intervals.find(interval => interval > car.value!.mileage!)
   return nextInterval
 })
 
 const openMaintenanceList = () => navigateTo('/user/maintenance')
+
+const openBooking = () => {
+  const preferredService = allTasks.value[0]?.title || rules.value[0]?.title || 'Регламентное ТО'
+  navigateTo({
+    path: '/user/booking/new',
+    query: {
+      carId: String(carId.value),
+      service: preferredService,
+      serviceKind: 'maintenance_rule',
+    },
+  })
+}
 
 const errText = computed(() => {
   if (carError.value) return "Не удалось загрузить данные автомобиля"
@@ -148,16 +259,10 @@ const errText = computed(() => {
                   {{ Number(mileage).toLocaleString() }} км
                 </h3>
                 <span
-                  v-if="car?.mileage && Number(mileage) <= car.mileage"
-                  class="rounded-full bg-green-500 px-2 py-1 text-xs text-white"
+                  class="rounded-full px-2 py-1 text-xs text-white"
+                  :class="getMileageGroupStatus(Number(mileage), tasks).className"
                 >
-                  Выполнено
-                </span>
-                <span
-                  v-else-if="car?.mileage && Number(mileage) > car.mileage"
-                  class="rounded-full bg-cyan-500 px-2 py-1 text-xs text-white"
-                >
-                  Рекомендуется
+                  {{ getMileageGroupStatus(Number(mileage), tasks).label }}
                 </span>
               </div>
 
@@ -201,12 +306,60 @@ const errText = computed(() => {
                 <p class="text-sm text-text-text-muted dark:text-text-muted">Всего работ</p>
                 <p class="mt-2 text-lg font-semibold text-text dark:text-text-dark">{{ allTasks.length }}</p>
               </div>
+
+              <div class="rounded-2xl border border-border bg-bg p-4 dark:border-border-dark dark:bg-bg-dark">
+                <p class="text-sm text-text-muted dark:text-text-muted">Нужно выполнить сейчас</p>
+                <p class="mt-2 text-lg font-semibold text-amber-400">{{ dueTaskCount }}</p>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-bg p-4 dark:border-border-dark dark:bg-bg-dark">
+                <p class="text-sm text-text-muted dark:text-text-muted">Плановые пункты</p>
+                <p class="mt-2 text-lg font-semibold text-cyan-300">{{ plannedTaskCount }}</p>
+              </div>
+
+              <div class="rounded-2xl border border-border bg-bg p-4 dark:border-border-dark dark:bg-bg-dark">
+                <p class="text-sm text-text-muted dark:text-text-muted">Статус регламентов</p>
+                <p class="mt-2 text-lg font-semibold text-text dark:text-text-dark">{{ executionStatusText }}</p>
+              </div>
+
+              <div v-if="latestExecution" class="rounded-2xl border border-border bg-bg p-4 dark:border-border-dark dark:bg-bg-dark">
+                <p class="text-sm text-text-muted dark:text-text-muted">Последнее выполнение</p>
+                <p class="mt-2 text-lg font-semibold text-text dark:text-text-dark">
+                  {{ new Date(latestExecution.performed_at).toLocaleString() }}
+                </p>
+                <p class="mt-1 text-sm text-text-muted dark:text-text-muted">
+                  {{ latestExecution.performed_by_name || latestExecution.performed_by_username || latestExecution.performed_by }}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <p class="mb-3 text-xs text-text-muted dark:text-text-muted">
+                Логика статусов: "Нужно выполнить" = пробег достигнут и фиксации нет/устарела, "Выполнено" = есть свежая фиксация, "План" = пробег еще не достигнут.
+              </p>
+              <h3 class="text-base font-semibold text-text dark:text-text-dark">История выполнений</h3>
+              <div v-if="!executions.length" class="mt-3 text-sm text-text-muted dark:text-text-muted">
+                Пока нет записей о выполнении.
+              </div>
+              <div v-else class="mt-3 space-y-2">
+                <div
+                  v-for="execution in executions"
+                  :key="execution.id"
+                  class="rounded-xl border border-border bg-bg p-3 text-sm dark:border-border-dark dark:bg-bg-dark"
+                >
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-text dark:text-text-dark">{{ new Date(execution.performed_at).toLocaleString() }}</span>
+                    <span class="text-text-muted dark:text-text-muted">{{ execution.related_object_type }} #{{ execution.related_object_id }}</span>
+                  </div>
+                  <p class="mt-1 text-text-muted dark:text-text-muted">{{ execution.comment || 'Без комментария' }}</p>
+                </div>
+              </div>
             </div>
           </div>
 
           <button
             class="w-full rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
-            @click="navigateTo('/user/booking/new')"
+            @click="openBooking"
           >
             Записаться на обслуживание
           </button>

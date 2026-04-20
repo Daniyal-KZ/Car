@@ -1,7 +1,7 @@
 from app.schemas.user import UserBase, UserCreate, UserUpdate, UserOut
 from app.schemas.car_image import CarImageOut
 from app.schemas.car import CarBase, CarCreate, CarUpdate, CarOut
-from app.schemas.service_book import ServiceBookCreate, ServiceBookOut
+from app.schemas.service_book import ServiceBookCreate, ServiceBookOut, ServiceInspectionCreate
 from app.schemas.maintenance_rule import (
     MaintenanceRuleBase,
     MaintenanceRuleCreate,
@@ -10,6 +10,45 @@ from app.schemas.maintenance_rule import (
     MaintenanceTaskCreate,
     MaintenanceTaskOut,
     MaintenanceRuleForCarOut,
+    ServiceExecutionBase,
+    ServiceExecutionCreate,
+    ServiceExecutionOut,
+)
+from app.schemas.service_order import (
+    EstimateItemIn,
+    ServiceOrderCreate,
+    ServiceOrderAccept,
+    ServiceOrderComplete,
+    ServiceOrderOut,
+    ServiceOrderDetailsOut,
+)
+from app.schemas.invoice import (
+    InvoiceItemOut,
+    InvoiceOut,
+    InvoiceItemUpdate,
+    InvoiceAdminUpdate,
+    InvoiceOrderSummary,
+)
+from app.schemas.damage_report import (
+    DamageReportImageOut,
+    DamageReportCreate,
+    DamageReportAnalyze,
+    DamageReportOut,
+)
+from app.schemas.assistant import (
+    AssistantMessageIn,
+    AssistantChatRequest,
+    AssistantChatResponse,
+)
+from app.schemas.assistant_chat import (
+    AssistantChatCreate,
+    AssistantChatMessageIn,
+    AssistantChatSendIn,
+    AssistantChatUpdate,
+    AssistantMessageOut,
+    AssistantChatSummaryOut,
+    AssistantChatOut,
+    AssistantChatSendOut,
 )
 
 __all__ = [
@@ -24,6 +63,7 @@ __all__ = [
     "CarOut",
     "ServiceBookCreate",
     "ServiceBookOut",
+    "ServiceInspectionCreate",
     "MaintenanceRuleBase",
     "MaintenanceRuleCreate",
     "MaintenanceRuleUpdate",
@@ -31,4 +71,33 @@ __all__ = [
     "MaintenanceTaskCreate",
     "MaintenanceTaskOut",
     "MaintenanceRuleForCarOut",
+    "ServiceExecutionBase",
+    "ServiceExecutionCreate",
+    "ServiceExecutionOut",
+    "EstimateItemIn",
+    "ServiceOrderCreate",
+    "ServiceOrderAccept",
+    "ServiceOrderComplete",
+    "ServiceOrderOut",
+    "ServiceOrderDetailsOut",
+    "InvoiceItemOut",
+    "InvoiceOut",
+    "InvoiceItemUpdate",
+    "InvoiceAdminUpdate",
+    "InvoiceOrderSummary",
+    "DamageReportImageOut",
+    "DamageReportCreate",
+    "DamageReportAnalyze",
+    "DamageReportOut",
+    "AssistantMessageIn",
+    "AssistantChatRequest",
+    "AssistantChatResponse",
+    "AssistantChatCreate",
+    "AssistantChatMessageIn",
+    "AssistantChatSendIn",
+    "AssistantChatUpdate",
+    "AssistantMessageOut",
+    "AssistantChatSummaryOut",
+    "AssistantChatOut",
+    "AssistantChatSendOut",
 ]

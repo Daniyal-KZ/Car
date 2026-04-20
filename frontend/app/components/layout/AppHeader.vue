@@ -15,7 +15,7 @@
           :to="localePath(item.to)"
           class="nav-link"
         >
-          {{ t(item.label) }}
+            {{ item.displayLabel || t(item.label) }}
         </NuxtLink>
       </nav>
 
@@ -62,7 +62,6 @@ import { useLocalePath } from '#i18n'
 
 const auth = useAuthStore()
 
-// 💥 ВАЖНО: setLocale
 const { t, locale, setLocale } = useI18n()
 const localePath = useLocalePath()
 
@@ -74,22 +73,30 @@ const localeOptions = [
 
 const selectedLocale = computed({
   get: () => locale.value,
-  set: (value: string) => setLocale(value),
+  set: (value: string) => setLocale(value as 'en' | 'ru' | 'kz'),
 })
 
 const userInitials = computed(() => {
   const username = auth.user?.username ?? ''
   const parts = username.split(/\s+/).filter(Boolean)
   if (parts.length === 0) return ''
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[1][0]).toUpperCase()
+  if (parts.length === 1) return (parts[0] || '').slice(0, 2).toUpperCase()
+  const first = (parts[0] || '').charAt(0)
+  const second = (parts[1] || '').charAt(0)
+  return (first + second).toUpperCase()
 })
 
-const navByRole = {
+type NavItem = {
+  label: string
+  to: string
+  displayLabel?: string
+}
+
+const navByRole: Record<string, NavItem[]> = {
   user: [
     { label: 'garage', to: '/user/garage' },
     { label: 'maintenance', to: '/user/maintenance' },
-    { label: 'booking', to: '/user/booking' },
+    { label: 'booking_requests', to: '/user/requests' },
     { label: 'diagnostics', to: '/user/diagnostics' },
     { label: 'damages', to: '/user/damages' },
     { label: 'assistant', to: '/user/assistant' },
@@ -100,6 +107,7 @@ const navByRole = {
     { label: 'inspection', to: '/admin/inspection' },
     { label: 'diagnostics', to: '/admin/diagnostics' },
     { label: 'defects', to: '/admin/defects' },
+    { label: 'booking_requests', to: '/mechanic/requests' },
     { label: 'assistant', to: '/admin/assistant' },
     { label: 'maintenance_rules', to: '/admin/maintenance-rules' },
     { label: 'estimate', to: '/admin/estimate' },
@@ -109,15 +117,22 @@ const navByRole = {
     { label: 'inspection', to: '/admin/inspection' },
     { label: 'diagnostics', to: '/admin/diagnostics' },
     { label: 'defects', to: '/admin/defects' },
+    { label: 'booking_requests', to: '/mechanic/requests' },
     { label: 'assistant', to: '/admin/assistant' },
     { label: 'maintenance_rules', to: '/admin/maintenance-rules' },
     { label: 'estimate', to: '/admin/estimate' },
     { label: 'dev_panel', to: '/dev-panel' },
   ],
+  mechanic: [
+    { label: 'booking_requests', to: '/mechanic/orders' },
+  ],
 }
 
 const role = computed(() => auth.user?.role ?? 'user')
-const menuItems = computed(() => navByRole[role.value] ?? navByRole.user)
+const menuItems = computed(() => {
+  const key = role.value as keyof typeof navByRole
+  return navByRole[key] ?? navByRole.user
+})
 
 const isDark = ref(false)
 
@@ -141,6 +156,15 @@ const toggleTheme = () => {
 
 <style scoped>
 .nav-link {
-  @apply text-text-muted dark:text-text-muted hover:text-cyan-400 transition duration-200;
+  color: var(--color-text-muted);
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: #22d3ee;
+}
+
+:global(.dark) .nav-link {
+  color: var(--color-text-muted);
 }
 </style>

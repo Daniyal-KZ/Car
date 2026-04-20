@@ -8,6 +8,8 @@ const props = defineProps<{
   serviceBookUrl?: string
 }>()
 
+const { t } = useI18n()
+
 const emit = defineEmits<{
   (e: "edit"): void
 }>()
@@ -59,7 +61,7 @@ const ownerLabel = computed(() => {
             v-else
             class="flex h-[280px] w-full items-center justify-center bg-slate-100 text-lg text-text-muted sm:h-[360px] lg:h-[460px] dark:bg-bg-dark dark:text-text-muted"
           >
-            Нет фото
+            {{ t('garage_no_photo') }}
           </div>
         </div>
 
@@ -88,15 +90,22 @@ const ownerLabel = computed(() => {
           </h1>
 
           <p class="mt-2 text-sm text-text-muted dark:text-text-muted">
-            {{ car.year }} год
+            {{ car.year }} {{ t('garage_year_suffix') }}
           </p>
         </div>
 
         <div class="space-y-4">
           <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
-            <div class="text-sm text-text-muted">Пробег</div>
+            <div class="text-sm text-text-muted">VIN</div>
+            <div class="mt-1 text-base font-semibold text-text">
+              {{ car.vin || t('garage_not_specified') }}
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+            <div class="text-sm text-text-muted">{{ t('garage_mileage') }}</div>
             <div class="mt-1 text-xl font-semibold text-text">
-              {{ car.mileage.toLocaleString() }} км
+              {{ car.mileage.toLocaleString() }} {{ t('garage_km_short') }}
             </div>
           </div>
 
@@ -104,7 +113,7 @@ const ownerLabel = computed(() => {
             v-if="showOwner"
             class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark"
           >
-            <div class="text-sm text-text-muted">Владелец</div>
+            <div class="text-sm text-text-muted">{{ t('garage_owner') }}</div>
             <div class="mt-1 text-base font-medium text-text">
               {{ ownerLabel }}
             </div>
@@ -117,7 +126,7 @@ const ownerLabel = computed(() => {
             class="w-full rounded-2xl bg-yellow-400 px-4 py-3 font-medium text-black transition hover:opacity-90 dark:text-text-dark"
             @click="emit('edit')"
           >
-            Редактировать
+            {{ t('garage_edit') }}
           </button>
 
           <button
@@ -125,7 +134,7 @@ const ownerLabel = computed(() => {
             class="w-full rounded-2xl bg-blue-600 px-4 py-3 font-medium text-white transition hover:opacity-90"
             @click="$router.push(serviceBookUrl)"
           >
-            Сервисная книжка
+            {{ t('garage_service_book') }}
           </button>
         </div>
       </div>
@@ -135,35 +144,42 @@ const ownerLabel = computed(() => {
 
     <div class="rounded-3xl border border-border bg-bg p-6 dark:border-border-dark dark:bg-bg-dark">
       <h2 class="mb-4 text-xl font-semibold text-text dark:text-text-dark">
-        Характеристики
+        {{ t('garage_specs') }}
       </h2>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
-          <div class="text-sm text-text-muted">Марка</div>
+          <div class="text-sm text-text-muted">{{ t('garage_brand') }}</div>
           <div class="mt-1 font-medium text-text">
             {{ car.brand }}
           </div>
         </div>
 
         <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
-          <div class="text-sm text-text-muted">Модель</div>
+          <div class="text-sm text-text-muted">{{ t('garage_model') }}</div>
           <div class="mt-1 font-medium text-text">
             {{ car.model }}
           </div>
         </div>
 
         <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
-          <div class="text-sm text-text-muted">Год</div>
+          <div class="text-sm text-text-muted">{{ t('garage_year') }}</div>
           <div class="mt-1 font-medium text-text">
             {{ car.year }}
           </div>
         </div>
 
         <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
-          <div class="text-sm text-text-muted">Пробег</div>
+          <div class="text-sm text-text-muted">VIN</div>
           <div class="mt-1 font-medium text-text">
-            {{ car.mileage.toLocaleString() }} км
+            {{ car.vin || t('garage_not_specified') }}
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-white px-4 py-4 text-text dark:bg-bg-dark dark:text-text-dark">
+          <div class="text-sm text-text-muted">{{ t('garage_mileage') }}</div>
+          <div class="mt-1 font-medium text-text">
+            {{ car.mileage.toLocaleString() }} {{ t('garage_km_short') }}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ definePageMeta({ middleware: ["auth", "role"] })
 type CarPayload = {
   brand: string
   model: string
+  vin: string | null
   year: number
   mileage: number
 }

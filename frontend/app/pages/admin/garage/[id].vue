@@ -7,6 +7,7 @@ definePageMeta({ middleware: ["auth", "role"] })
 const route = useRoute()
 const config = useRuntimeConfig()
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const id = computed(() => Number(route.params.id))
 
@@ -22,7 +23,7 @@ const { data, pending, error, refresh } = await useFetch<Car>(
   }
 )
 
-const errText = computed(() => (error.value ? "Не удалось загрузить машину" : null))
+const errText = computed(() => (error.value ? t('admin_garage_item_load_error') : null))
 
 const cancel = () => navigateTo("/admin/garage")
 </script>
@@ -31,7 +32,7 @@ const cancel = () => navigateTo("/admin/garage")
   <div class="mx-auto max-w-6xl px-6 py-10">
     <div class="mb-6">
       <NuxtLink to="/admin/garage" class="text-sm text-text-muted hover:text-cyan-400 dark:text-text-muted">
-        ← Назад в гараж
+        {{ t('admin_garage_back') }}
       </NuxtLink>
     </div>
 
@@ -39,7 +40,7 @@ const cancel = () => navigateTo("/admin/garage")
       v-if="pending"
       class="rounded-2xl border border-border bg-bg p-6 text-text dark:border-border-dark dark:bg-bg-dark dark:text-text-dark"
     >
-      Загрузка...
+      {{ t('common_loading') }}
     </div>
 
     <div

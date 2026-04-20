@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import type { Message } from "@/composables/useAssistant"
+import type { AssistantAction, Message } from "@/composables/useAssistant"
 
-defineProps<{
+const props = defineProps<{
   message: Message
 }>()
+
+const { parseAction } = useAssistant()
+
+const action = computed<AssistantAction | null>(() => parseAction(props.message.actionJson))
 
 const formatTime = (date: string) => {
   return new Date(date).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   })
+}
+
+const openAction = async () => {
+  if (!action.value?.route) return
+  await navigateTo(action.value.route)
 }
 </script>
 
@@ -26,14 +35,22 @@ const formatTime = (date: string) => {
         {{ message.content }}
       </p>
 
+      <button
+        v-if="action?.route"
+        class="mt-3 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-200 transition hover:bg-cyan-500/20"
+        @click="openAction"
+      >
+        {{ action.label || 'Открыть' }}
+      </button>
+
       <div
-  class="mt-2 text-[11px]"
-  :class="message.role === 'user'
-    ? 'text-text dark:text-text-muted dark:text-text-muted'
-    : 'text-slate-400 dark:text-slate-500'"
->
-  {{ formatTime(message.createdAt) }}
-</div>
+        class="mt-2 text-[11px]"
+        :class="message.role === 'user'
+          ? 'text-text dark:text-text-muted dark:text-text-muted'
+          : 'text-slate-400 dark:text-slate-500'"
+      >
+        {{ formatTime(message.createdAt) }}
+      </div>
     </div>
   </div>
 </template>

@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const { t } = useI18n()
+</script>
+
 <template>
   <div class="flex flex-1 items-center justify-center px-6 py-10 bg-bg dark:bg-bg-dark text-text dark:text-text-dark">
     <div class="w-full max-w-2xl text-center">
@@ -8,11 +12,11 @@
       </div>
 
       <h2 class="text-3xl font-semibold text-text dark:text-text-dark">
-        Чем помочь?
+        {{ t('assistant_welcome_title') }}
       </h2>
 
       <p class="mt-3 text-sm text-text-muted dark:text-text-muted">
-        Опишите проблему с автомобилем, спросите про ТО, диагностику или ремонт.
+        {{ t('assistant_welcome_subtitle') }}
       </p>
     </div>
   </div>

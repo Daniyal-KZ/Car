@@ -2,7 +2,7 @@ import { defineNuxtRouteMiddleware, navigateTo } from '#app'
 import { useAuthStore } from '~/stores/auth'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (process.server) return
+  if (import.meta.server) return
 
   const auth = useAuthStore()
   
@@ -12,12 +12,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   if (to.path === '/login') {
     if (auth.isAuth) {
-      return window.location.href = '/profile'
+      if (auth.user?.id) {
+        return navigateTo(`/profile/${auth.user.id}`)
+      }
+      return navigateTo('/')
     }
     return
   }
 
   if (!auth.isAuth) {
-    return window.location.href = '/login'
+    return navigateTo('/login')
   }
 })

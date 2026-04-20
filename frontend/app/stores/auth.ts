@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
       if (this.inited) return
       this.inited = true
 
-      if (!process.client) return
+      if (!import.meta.client) return
 
       const token = localStorage.getItem('access_token')
       const savedUser = localStorage.getItem('user')
@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = me
         this.isAuth = true
 
-        if (process.client) {
+        if (import.meta.client) {
           localStorage.setItem('user', JSON.stringify(me))
         }
 
@@ -106,7 +106,7 @@ export const useAuthStore = defineStore('auth', {
         this.token = data.access_token
         this.isAuth = true
 
-        if (process.client) {
+        if (import.meta.client) {
           localStorage.setItem('access_token', data.access_token)
         }
 
@@ -130,7 +130,7 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.inited = false
 
-      if (process.client) {
+      if (import.meta.client) {
         localStorage.removeItem('access_token')
         localStorage.removeItem('user')
       }

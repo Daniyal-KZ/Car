@@ -25,7 +25,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_BASE || 'http://localhost:8000'
+      apiBase: 'http://localhost:8000'
     }
   },
 
@@ -45,7 +45,8 @@ export default defineNuxtConfig({
       { code: 'kz', name: 'Қазақ', file: 'kz.json'}
     ],
     defaultLocale: 'ru',
-
+    strategy: 'no_prefix',
+    detectBrowserLanguage: false,
   }
 
 })
