@@ -93,7 +93,6 @@ def create_car(
         vin=data.vin,
         year=data.year,
         mileage=data.mileage,
-        last_service=0,
         owner_id=current_user.id
     )
     db.add(car)
